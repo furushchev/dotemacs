@@ -1,4 +1,4 @@
-# dotemacs
+# dotemacs [![Build Status](https://travis-ci.org/furushchev/dotemacs.svg)](https://travis-ci.org/furushchev/dotemacs)
 
 **This is an Emacs Settings (migrated from bitbucket)**
 
