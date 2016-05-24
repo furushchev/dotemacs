@@ -7,7 +7,14 @@
 (let ((default-directory (expand-file-name "~/.emacs.d/site-lisp")))
   (add-to-list 'load-path default-directory)
   (when (fboundp 'normal-top-level-add-subdirs-to-load-path)
-      (normal-top-level-add-subdirs-to-load-path)))
+    (normal-top-level-add-subdirs-to-load-path)))
+
+;; expand gc threshold at start time
+(defconst sanityinc/initial-gc-cons-threshold gc-cons-threshold
+  "initial value of gc-conc-threshold at start-up time")
+(setq gc-cons-threshold (* 128 1024 1024))
+(add-hook 'after-init-hook
+          (lambda () (setq gc-cons-threshold sanityinc/initial-gc-cons-threshold)))
 
 ;; initialize package manager
 (require 'package)
