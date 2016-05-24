@@ -7,12 +7,10 @@
 (when (stringp ros/distro)
   (cond
    ((ros/version>= ros/distro "indigo") ;; indigo and later
-    (add-to-list 'load-path
-                 (format nil "/opt/ros/~A/share/emacs/site-lisp" ros/distro))
-    (when (locate-library 'rosemacs-config)
-      (require 'rosemacs-config)))
+    (use-package rosemacs-config
+      :load-path (format nil "/opt/ros/~A/share/emacs/site-lisp" ros/distro))
    (t ;; hydro and former
-    (when (locate-library 'rosemacs)
-      (require 'rosemacs)
+    (use-package rosemacs
+      :config
       (invoke-rosemacs)
-      (global-set-key "C-x C-r" ros-keymap)))))
+      :bind ("C-x C-r" . ros-keymap)))))

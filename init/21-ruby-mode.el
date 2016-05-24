@@ -1,2 +1,4 @@
-(require 'ruby-mode)
-(add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
+(use-package ruby-mode
+  :ensure t
+  :mode "\\.rb\\'"
+  :interpreter "ruby")

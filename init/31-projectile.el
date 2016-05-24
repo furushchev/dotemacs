@@ -1,2 +1,4 @@
-(require 'projectile)
-(projectile-global-mode)
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-global-mode))

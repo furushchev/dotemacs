@@ -18,48 +18,19 @@
 
 ;; initialize package manager
 (require 'package)
+;; (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (package-initialize)
 
-(defvar package-list
-  '(
-    ace-jump-mode
-    auto-complete
-    ac-slime
-    bash-completion
-    coffee-mode
-    dockerfile-mode
-    euslisp-mode
-    exec-path-from-shell
-    flycheck
-    git-gutter+
-    google-c-style
-    go-mode
-    go-autocomplete
-    haskell-mode
-;;    helm
-    init-loader
-    jade-mode
-    jedi
-    js2-mode
-    markdown-mode
-    nginx-mode
-    projectile
-    ruby-mode
-    scala-mode
-    slime
-    ssh-config-mode
-    web-mode
-    yaml-mode
-    yasnippet
-    ))
-
-;; install 3rdparty packages
-(let ((pkgs-not-installed
-       (loop for p in package-list
-             when (not (package-installed-p p))
-             collect p)))
+;; install minimum 3rdparty packages
+(let* ((package-list
+        '(init-loader
+          use-package))
+       (pkgs-not-installed
+        (loop for p in package-list
+              when (not (package-installed-p p))
+              collect p)))
   (when pkgs-not-installed
     (package-refresh-contents)
     (dolist (pkg pkgs-not-installed)
@@ -72,6 +43,7 @@
             (message "Initialize completed in %.2fms"
                      (sanityinc/time-subtract-millis after-init-time before-init-time))))
 
-(require 'init-loader)
+;; load settings from ~/.emacs.d/init
+(require 'use-package)
 (setq init-loader-show-log-after-init nil)
-(init-loader-load "~/.emacs.d/init")
+(init-loader-load (expand-file-name "~/.emacs.d/init"))

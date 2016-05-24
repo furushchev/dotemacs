@@ -1,1 +1,3 @@
-(require 'euslisp-mode)
+(use-package euslisp-mode
+  :ensure t
+  :mode "\\.l$")

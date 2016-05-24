@@ -1,2 +1,3 @@
-(require 'jade-mode)
-(add-to-list 'auto-mode-alist '("\\.jade$" . jade-mode))
+(use-package jade-mode
+  :ensure t
+  :mode "\\.jade$")

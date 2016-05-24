@@ -1,1 +1,3 @@
-(require 'scala-mode)
+(use-package scala-mode
+  :ensure t
+  :mode "\\.scala$")

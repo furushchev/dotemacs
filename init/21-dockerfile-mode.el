@@ -1,1 +1,3 @@
-(add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode))
+(use-package dockerfile-mode
+  :ensure t
+  :mode "Dockerfile\\'")

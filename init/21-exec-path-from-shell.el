@@ -1,7 +1,6 @@
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize))
-;; (require 'exec-path-from-shell)
-;; (setq exec-path-from-shell-check-startup-files nil)
-;; (exec-path-from-shell-initialize)
-;; (let ((envs '("PATH" "GOROOT" "GOPATH" "PYTHONPATH" "ROS_PACKAGE_PATH" "LD_LIBRARY_PATH" "CMAKE_PREFIX_PATH")))
-;;     (exec-path-from-shell-copy-envs envs))
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns))
+  :defer t
+  :ensure t
+  :commands shell
+  :config (exec-path-from-shell-initialize))
