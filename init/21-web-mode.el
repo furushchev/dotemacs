@@ -12,4 +12,4 @@
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset    2)
   (setq web-mode-code-offset 2))
- (add-hook 'web-mode-hook 'web-mode-hook-func))
+(add-hook 'web-mode-hook 'web-mode-hook-func)

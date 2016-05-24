@@ -1,10 +1,7 @@
 (require 'auto-complete)
-
-;; add dict
-(add-to-list 'ac-directory-directories "~/.emacs.d/ac-dict")
-
-;; load config
 (require 'auto-complete-config)
+(defvar ac-directory-directories nil)
+(add-to-list 'ac-directory-directories (expand-file-name "~/.emacs.d/ac-dict"))
 (ac-config-default)
 (global-auto-complete-mode t)
 (setq ac-use-menu-map t)
@@ -21,8 +18,9 @@
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 
 ;; emacs-lisp
-(add-hook 'emacs-lisp-mode-hook (lambda ()
-				  (add-to-list 'ac-sources 'ac-source-symbols t)))
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (add-to-list 'ac-sources 'ac-source-symbols t)))
 
 (setq popup-use-optimized-column-computation nil)
 
@@ -34,4 +32,4 @@
 (defadvice ac-word-candidates (after remove-word-contain-japanese activate)
   (let ((contain-japanese (lambda (s) (string-match (rx (category japanese)) s))))
     (setq ad-return-value
-	            (remove-if contain-japanese ad-return-value))))
+          (remove-if contain-japanese ad-return-value))))

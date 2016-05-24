@@ -5,4 +5,4 @@
 (setf yas/indent-line nil)
 (setf (symbol-function 'yas-active-keys)
       (lambda ()
-        (remove-duplicates (mapcan #'yas--table-all-keys (yas--get-snippet-tables))))))
+        (remove-duplicates (mapcan #'yas--table-all-keys (yas--get-snippet-tables)))))
