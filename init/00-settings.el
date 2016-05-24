@@ -5,7 +5,7 @@
 ;; backup in ~/.emacs.d/backup
 (setq make-backup-files t)
 (add-to-list 'backup-directory-alist
-	     `("\\.*$" . ,(expand-file-name "~/.emacs.d/backup/")))
+             `("\\.*$" . ,(expand-file-name "~/.emacs.d/backup/")))
 
 ;; auto-save files in ~/.emacs.d/backup
 (setq auto-save-file-name-transforms
@@ -29,9 +29,9 @@
 
 ;; indentation
 (add-hook 'c-mode-common-hook '(lambda ()
-				 (c-set-style "linux")
-				 (setq indent-tabs-mode nil)
-				 (setq c-basic-offset tab-width)))
+                                 (c-set-style "linux")
+                                 (setq indent-tabs-mode nil)
+                                 (setq c-basic-offset tab-width)))
 (setq-default
  default-tab-width 2
  js-indent-level 2

@@ -58,13 +58,19 @@
 ;; install 3rdparty packages
 (let ((pkgs-not-installed
        (loop for p in package-list
-	     when (not (package-installed-p p))
-	     collect p)))
+             when (not (package-installed-p p))
+             collect p)))
   (when pkgs-not-installed
     (package-refresh-contents)
     (dolist (pkg pkgs-not-installed)
       (package-install pkg))))
 
+;; profiling init script
+(require 'init-profiling)
+(add-hook 'after-init-hook
+          (lambda ()
+            (message "Initialize completed in %.2fms"
+                     (sanityinc/time-subtract-millis after-init-time before-init-time))))
 
 (require 'init-loader)
 (setq init-loader-show-log-after-init nil)
