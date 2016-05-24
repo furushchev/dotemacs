@@ -28,6 +28,7 @@
     auto-complete
     ac-slime
     bash-completion
+    coffee-mode
     dockerfile-mode
     euslisp-mode
     exec-path-from-shell
@@ -39,6 +40,7 @@
     haskell-mode
 ;;    helm
     init-loader
+    jade-mode
     jedi
     js2-mode
     markdown-mode

@@ -78,4 +78,3 @@
   (define-key global-map [?\C-¥] [?\C-\\])
   (define-key global-map [?\M-¥] [?\M-\\])
   (define-key global-map [?\C-\M-¥] [?\C-\M-\\]))
-
