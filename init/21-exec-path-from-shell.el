@@ -1,2 +1,5 @@
-(let ((envs '("PATH" "GOPATH")))
-    (exec-path-from-shell-copy-envs envs))
+(add-to-list 'exec-path-from-shell-variables "GOPATH")
+(add-to-list 'exec-path-from-shell-variables "PYTHONPATH")
+(exec-path-from-shell-initialize)
+;; (let ((envs '("PATH" "GOROOT" "GOPATH" "PYTHONPATH" "ROS_PACKAGE_PATH" "LD_LIBRARY_PATH" "CMAKE_PREFIX_PATH")))
+;;     (exec-path-from-shell-copy-envs envs))

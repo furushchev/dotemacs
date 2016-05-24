@@ -25,6 +25,7 @@
     euslisp-mode
     exec-path-from-shell
     flycheck
+    git-gutter+
     google-c-style
     go-mode
     go-autocomplete
@@ -34,11 +35,13 @@
     jedi
     js2-mode
     markdown-mode
+    nginx-mode
     projectile
     ruby-mode
     scala-mode
     slime
     ssh-config-mode
+    web-mode
     yaml-mode
     yasnippet
     ))
