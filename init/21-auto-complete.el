@@ -20,7 +20,11 @@
             (lambda ()
               (add-to-list 'ac-sources 'ac-source-symbols t)))
   (setq popup-use-optimized-column-computation nil)
-  (add-to-list 'ac-modes 'markdown-mode)
+  (dolist (mode '(log-edit-mode org-mode text-mode
+                                yaml-mode haskell-mode html-mode
+                                nxml-mode sh-mode lisp-mode markdown-mode
+                                js2-mode css-mode))
+    (add-to-list 'ac-modes mode))
   (ac-flyspell-workaround)
   ;; avoid japanese
   (defadvice ac-word-candidates (after remove-word-contain-japanese activate)
