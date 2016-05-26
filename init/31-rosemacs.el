@@ -7,8 +7,8 @@
 (when (stringp ros/distro)
   (cond
    ((ros/version>= ros/distro "indigo") ;; indigo and later
-    (use-package rosemacs-config
-      :load-path (format nil "/opt/ros/~A/share/emacs/site-lisp" ros/distro))
+    (add-to-list 'load-path (format "/opt/ros/%s/share/emacs/site-lisp" ros/distro))
+      (use-package rosemacs-config))
    (t ;; hydro and former
     (use-package rosemacs
       :config
