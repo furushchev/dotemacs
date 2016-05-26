@@ -38,10 +38,9 @@
 
 ;; profiling init script
 (require 'init-profiling)
-(add-hook 'after-init-hook
-          (lambda ()
+(defun display-startup-echo-area-message ()
             (message "Initialize completed in %.2fms"
-                     (sanityinc/time-subtract-millis after-init-time before-init-time))))
+                     (sanityinc/time-subtract-millis after-init-time before-init-time)))
 
 ;; load settings from ~/.emacs.d/init
 (require 'use-package)

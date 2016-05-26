@@ -69,8 +69,10 @@
 (global-set-key "\C-cc" 'comment-region)    ; C-c c を範囲指定コメントに
 (global-set-key "\C-cu" 'uncomment-region)  ; C-c u を範囲指定コメント解除に
 
-;; disable splash
+;; disable splash/scratch
 (setq inhibit-startup-screen t)
+(setq inhibit-startup-message t)
+(setq initial-scratch-message nil)
 
 ;; workaround for inputting backslash on Cocoa Emacs
 (when (eq system-type 'darwin)
