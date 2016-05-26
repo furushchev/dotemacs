@@ -83,3 +83,10 @@
 
 ;; chmod +x if there is shebang on file top
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+
+;; disable right to left languages for performance
+(setq-default bidi-display-reordering nil)
+
+;; ignore warning on byte-compile
+(setq byte-compile-warnings
+      '(not nresolved free-vars callargs redefine obsolete noruntime cl-functions interactive-only))
