@@ -78,3 +78,6 @@
   (define-key global-map [?\C-¥] [?\C-\\])
   (define-key global-map [?\M-¥] [?\M-\\])
   (define-key global-map [?\C-\M-¥] [?\C-\M-\\]))
+
+;; chmod +x if there is shebang on file top
+(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
