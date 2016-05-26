@@ -1,5 +1,5 @@
 (use-package slime
-  :commands slime
+  :commands (slime)
   :ensure t
   :config
   (if (eq system-type 'darwin)
@@ -13,6 +13,7 @@
 
 (use-package ac-slime
   :ensure t
+  :commands (slime)
   :init
   (add-hook 'slime-mode-hook 'set-up-slime-ac)
   (add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
