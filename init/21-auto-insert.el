@@ -1,9 +1,7 @@
-(use-package auto-insert
+(use-package autoinsert
   :config
   (auto-insert-mode t)
-
   (setq auto-insert-directory (expand-file-name "~/.emacs.d/template"))
-
   (setq auto-insert-alist
         (nconc '(
                  ("\\.py$"  . ["template.py"   make-template])
@@ -11,8 +9,6 @@
                  ("\\.cpp$" . ["template.cpp"  make-template])
                  ("\\.l$"   . ["template.l"    make-template])
                  ) auto-insert-alist))
-
-
   (defvar template-replace-alist
     '(("%file%" . (lambda ()
                     (file-name-nondirectory (buffer-file-name))))
