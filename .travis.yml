@@ -27,3 +27,5 @@ before_script:
   - ln -s `pwd` $HOME/.emacs.d
 script:
   - emacs -batch --eval '(setq debug-on-error t)' -l init.el
+after_script:
+  - emacs -batch --eval -l .travis-show-log.el
