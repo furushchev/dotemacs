@@ -1,4 +1,5 @@
 (use-package auto-complete
+  :disabled t
   :ensure t
   :init
   :config
