@@ -6,6 +6,7 @@
          "\\.as[cp]x$"
          "\\.erb$"
          "\\.html?$"
+         "\\.jsx$"
          "\\.ejs$")
   :config
   (set-face-attribute 'web-mode-html-tag-bracket-face nil :foreground "blue")
