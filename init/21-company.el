@@ -45,3 +45,8 @@
   (:map company-search-map
         ("C-n" . company-select-next)
         ("C-p" . company-select-previous)))
+
+(use-package company-quickhelp
+  :ensure (company)
+  :init
+  (add-hook 'global-company-mode-hook 'company-quickhelp-mode))
