@@ -1,6 +1,7 @@
 (use-package jedi
-  :ensure jedi-core
-  :ensure company-jedi
+  :ensure (jedi
+           company
+           company-jedi)
   :mode "\\.py$"
   :config
   (setq-default jedi:complete-on-dot t)

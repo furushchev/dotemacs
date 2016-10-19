@@ -1,5 +1,4 @@
 (use-package yasnippet
-  :ensure t
   :commands (yas-minor-mode yas-expand yas-insert-snippet)
   :diminish yas-minor-mode
   :config

@@ -1,6 +1,5 @@
 (use-package auto-complete
   :disabled t
-  :ensure t
   :init
   :config
   (use-package auto-complete-config

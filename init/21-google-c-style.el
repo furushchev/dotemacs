@@ -1,6 +1,5 @@
 (use-package google-c-style
   :defer t
-  :ensure t
   :config
   (setq auto-mode-alist
         (append '(("\\.h\\(\\..+\\)?$" . c++-mode))

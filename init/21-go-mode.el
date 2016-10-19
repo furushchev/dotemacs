@@ -1,5 +1,4 @@
 (use-package go-mode
-  :ensure t
   :mode "\\.go\\'"
   :config
   ;; go get code.google.com/p/go.tools/cmd/goimports
