@@ -43,6 +43,10 @@
                      (sanityinc/time-subtract-millis after-init-time before-init-time)))
 
 ;; load settings from ~/.emacs.d/init
-(require 'use-package)
+(eval-when-compile (require 'use-package))
+(require 'diminish)
+(require 'bind-key)
+(setq use-package-verbose t)
+(setq use-package-minimum-reported-time 0.001)
 (setq init-loader-show-log-after-init nil)
 (init-loader-load (expand-file-name "~/.emacs.d/init"))
