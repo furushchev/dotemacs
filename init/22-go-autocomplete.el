@@ -1,3 +1,3 @@
 (use-package go-autocomplete
-  :ensure t
+  :disabled t
   :mode "\\.go$")
