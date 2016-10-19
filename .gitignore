@@ -89,3 +89,4 @@ ac-comphist.dat
 backup/*
 !backup/.keep
 projectile*
+irony
