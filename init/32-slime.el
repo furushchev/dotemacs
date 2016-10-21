@@ -1,6 +1,7 @@
 (use-package slime
+  :ensure t
+  :ensure slime-company
   :commands (slime)
-  :ensure (slime-company)
   :config
   (use-package slime-autoloads)
   ;; for slime-company

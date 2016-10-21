@@ -1,4 +1,5 @@
 (use-package flycheck
+  :ensure t
   :diminish flycheck-mode
   :config
   (global-flycheck-mode)
@@ -8,6 +9,7 @@
       '(flycheck-display-errors-delay 0.5))))
 
 (use-package flycheck-pos-tip
+  :ensure t
   :ensure flycheck
   :defer t
   :config

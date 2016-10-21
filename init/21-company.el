@@ -1,11 +1,13 @@
 (use-package company
+  :ensure t
   :config
   (global-company-mode t)
   (setq company-idle-delay 0.05)
-  (setq company-minimum-prefix-length 3)
+  (setq company-minimum-prefix-length 2)
   (setq company-selection-wrap-around t)
   (setq company-transformers '(company-sort-by-occurrence
                                company-sort-by-backend-importance))
+
   ;; select candidate by Tab if it is only one.
   (defun company--insert-candidate2 (candidate)
     (when (> (length candidate) 0)
@@ -26,6 +28,7 @@
         (company--insert-candidate2 company-common))))
   (define-key company-active-map [tab] 'company-complete-common2)
   (define-key company-active-map [backtab] 'company-select-previous)
+
   ;; set color
   (set-face-attribute 'company-tooltip nil
                       :foreground "black" :background "lightgrey")
@@ -40,13 +43,10 @@
   (set-face-attribute 'company-scrollbar-fg nil
                       :background "white")
   (set-face-attribute 'company-scrollbar-bg nil
-                      :background "gray40")
-  :bind
-  (:map company-search-map
-        ("C-n" . company-select-next)
-        ("C-p" . company-select-previous)))
+                      :background "gray40"))
 
 (use-package company-quickhelp
-  :ensure (company)
+  :ensure t
+  :ensure company
   :init
   (add-hook 'global-company-mode-hook 'company-quickhelp-mode))

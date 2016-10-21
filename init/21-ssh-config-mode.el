@@ -1,4 +1,5 @@
 (use-package ssh-config-mode
+  :ensure t
   :mode (".ssh/config\\'"
          "sshd?_config\\'")
   :config

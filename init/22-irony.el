@@ -1,5 +1,7 @@
 (use-package irony
-  :ensure (irony company company-irony)
+  :ensure t
+  :ensure company
+  :ensure company-irony
   :config
   (add-to-list 'company-backends 'company-irony)
   (add-hook 'c-mode-hook 'irony-mode)

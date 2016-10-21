@@ -1,10 +1,9 @@
 (use-package auto-complete
   :disabled t
-  :init
+  :ensure t
+  :ensure auto-complete-config
   :config
-  (use-package auto-complete-config
-    :config
-    (ac-config-default))
+  (ac-config-default)
   (add-to-list 'ac-dictionary-directories (expand-file-name "~/.emacs.d/ac-dict"))
   (global-auto-complete-mode t)
   (setq ac-use-menu-map t)

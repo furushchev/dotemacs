@@ -1,4 +1,5 @@
 (use-package google-c-style
+  :ensure t
   :defer t
   :config
   (setq auto-mode-alist
