@@ -90,3 +90,4 @@ backup/*
 !backup/.keep
 projectile*
 irony
+.python-environments
