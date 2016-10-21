@@ -10,7 +10,7 @@
     (add-to-list 'load-path (format "/opt/ros/%s/share/emacs/site-lisp" ros/distro))
     (use-package rosemacs-config)
     (add-to-list 'load-path (format "/opt/ros/%s/share/slime_ros" ros/distro))
-    (use-package 'slime-config))
+    (use-package slime-config))
    (t ;; hydro and former
     (use-package rosemacs
       :config
