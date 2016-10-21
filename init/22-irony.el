@@ -2,6 +2,14 @@
   :ensure t
   :ensure company
   :ensure company-irony
+  :mode ("\\.c$"
+         "\\.h$"
+         "\\.c(c|pp)$"
+         "\\.h(h|pp)$")
+  :init
+  (add-to-list 'company-backends 'company-irony)
+  (add-hook 'c-mode-hook 'irony-mode)
+  (add-hook 'c++-mode-hook 'irony-mode)
   :config
   (setq irony-lang-compile-option-alist
         (quote ((c++-mode . "c++ -std=c++11 -lstdc++")
@@ -19,8 +27,5 @@
         (let ((it (cdr-safe (assq major-mode irony-lang-compile-option-alist))))
           (when it (append '("-x") (split-string it "\s")))))
       (advice-add 'irony--lang-compile-option :override #'ad-irony--lang-compile-option)))
-  (add-to-list 'company-backends 'company-irony)
-  (add-hook 'c-mode-hook 'irony-mode)
-  (add-hook 'c++-mode-hook 'irony-mode)
   (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
   (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
