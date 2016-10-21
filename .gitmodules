@@ -1,0 +1,6 @@
+[submodule "site-lisp/magit"]
+	path = site-lisp/magit
+	url = https://github.com/magit/magit
+[submodule "site-lisp/git-modes"]
+	path = site-lisp/git-modes
+	url = https://github.com/magit/git-modes
