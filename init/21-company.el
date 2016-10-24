@@ -1,5 +1,6 @@
 (use-package company
   :ensure t
+  :diminish company-mode
   :config
   (global-company-mode t)
   (setq company-idle-delay 0.05)
