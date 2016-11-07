@@ -4,10 +4,17 @@
 
 ### Install
 
+``` bash
+curl -sfL https://raw.github.com/furushchev/dotemacs/master/install.sh | bash
+```
+
+### Step-by-Step Install
+
 1. download this repository and set on appropriate directory
 
   ``` bash
 git clone https://github.com/furushchev/dotemacs.git ~/.emacs.d
+cd ~/.emacs.d && git submodule update --init
 ```
 
 2. launch `emacs`
