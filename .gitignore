@@ -91,3 +91,5 @@ backup/*
 projectile*
 irony
 .python-environments
+el-get
+places
