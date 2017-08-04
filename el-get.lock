@@ -21,4 +21,5 @@
         (irony-eldoc :checksum "0df5831eaae264a25422b061eb2792aadde8b3f2")
         (irony-mode :checksum "d47bc8d94748dbd87fed9bf92cea85e115a39031")))
 (setq el-get-lock-locked-packages 'nil)
-(setq el-get-lock-unlocked-packages 'nil)
+(setq el-get-lock-unlocked-packages
+      '(el-get))
