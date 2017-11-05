@@ -198,18 +198,25 @@
 ;; cmake-mode
 (el-get-bundle cmake-mode)
 
+;; company
+(el-get-bundle company
+  (global-company-mode 1)
+  (define-key company-active-map (kbd "<tab>") 'company-complete-selection))
+
 ;; git
 (el-get-bundle git-gutter-fringe+)
 
 ;; irony
 (el-get-bundle irony-eldoc)
 (el-get-bundle irony-mode
+  (add-to-list 'company-backends 'company-irony)
   (add-hook 'irony-mode-hook 'irony-eldoc)
-  (add-hook 'c++-mode-hook 'irony-mode))
+  (add-hook 'c-mode-common-hook 'irony-mode))
 
 ;; jedi
 (el-get-bundle jedi
   (load "~/.emacs.d/subr-x.el")
+  (add-hook 'python-mode-hook 'jedi:setup)
   (setq-default jedi:complete-on-dot t)
   (setq-default jedi:use-shortcuts t))
 
@@ -218,6 +225,10 @@
 
 ;; popwin
 (el-get-bundle popwin)
+
+;; python-mode
+(el-get-bundle python-mode
+  (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode)))
 
 ;; slime
 (el-get-bundle slime)
@@ -240,6 +251,14 @@
 (el-get-bundle yatemplate
   (yatemplate-fill-alist)
   (auto-insert-mode 1))
+
+(el-get-bundle yasnippet
+  (setq yas-snippet-dirs
+        '("~/.emacs.d/snippets"
+          "~/.emacs.d/el-get/yasnippet/snippets"))
+  (define-key yas-keymap (kbd "<tab>") nil)
+  (add-to-list 'company-backends 'company-yasnippet)
+  (yas-global-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;; rosemacs
