@@ -96,10 +96,17 @@
 (custom-set-variables
  '(blink-matching-paren t)
  '(display-time-mode t)
- '(tool-bar-mode nil)
  '(menu-bar-mode nil)
+;; '(tool-bar-mode nil)
  '(transient-mark-mode t))
 (custom-set-faces)
+
+;; solarized
+(add-to-list 'custom-theme-load-path
+             "~/.emacs.d/site-lisp/emacs-color-theme-solarized")
+(set-frame-parameter nil 'background-mode 'dark)
+(set-terminal-parameter nil 'background-mode 'dark)
+(load-theme 'solarized t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;; Editings
