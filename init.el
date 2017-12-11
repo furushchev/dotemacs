@@ -37,6 +37,11 @@
 ;; chmod +x if there is shebang on file top
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
+;; disable bell
+(setq ring-bell-function 'ignore)
+
+;; suppress warnings
+(setq enable-local-variables :safe)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;; Keybindings
@@ -101,12 +106,27 @@
 
 ;; hide menu bar on top
 (custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(blink-matching-paren t)
  '(display-time-mode t)
- '(tool-bar-mode nil)
+ '(flycheck-display-errors-delay 0.5)
+ '(flycheck-display-errors-function
+   (function flycheck-display-error-messages-unless-error-list))
  '(menu-bar-mode nil)
+ '(package-selected-packages
+   (quote
+    (graphviz-dot-mode dockerfile-mode company-c-headers slime-quicklisp slime-company company-irony yatemplate yaml-mode web-mode use-package slime popwin markdown-mode jedi irony-eldoc google-c-style git-gutter-fringe+ flycheck-pos-tip diminish company-quickhelp company-jedi cmake-mode)))
+ '(tool-bar-mode nil)
  '(transient-mark-mode t))
-(custom-set-faces)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;; Editings
@@ -123,9 +143,6 @@
 
 ;; keep new line on file end
 (setq require-final-newline t)
-
-;; always revert buffer
-(global-auto-revert-mode 1)
 
 ;; use soft tabs (2 spaces)
 (setq-default indent-tabs-mode nil)
@@ -162,15 +179,6 @@
                 (make-directory dir t)
                 nil)))
 
-;; use directory name instead of <num>
-(require 'uniquify nil 'noerror)
-(setq uniquify-buffer-name-style 'forward)
-
-;; save last cursor place
-(require 'saveplace)
-(setq-default save-place t)
-(setq save-place-file (concat user-emacs-directory "places"))
-
 ;; el-doc
 (setq-default eldoc-idle-delay 0.1
               eldoc-echo-area-use-multiline-p t)
@@ -178,10 +186,6 @@
                 lisp-interaction-mode-hook))
   (add-hook hook #'eldoc-mode))
 
-;; writable dired
-(require 'wdired)
-(setq wdired-allow-to-change-permissions t)
-(define-key dired-mode-map "e" 'wdired-change-to-wdired-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;; use-package
@@ -195,7 +199,6 @@
 ;;(add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/"))
 ;;(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
 (add-to-list 'load-path "~/.emacs.d/elpa")
-(add-to-list 'load-path "~/.emacs.d/site-lisp")
 (package-initialize)
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -204,23 +207,34 @@
 (use-package diminish :ensure t)
 (require 'bind-key)
 
-;; el-get
-(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+;; el-get for keep backward compatibility
+(defmacro el-get-bundle (name &rest form) t)
+(when (version< emacs-version "24.4")
+  (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
 
-(unless (require 'el-get nil 'noerror)
-  (with-current-buffer
-      (url-retrieve-synchronously
-       "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
-    (goto-char (point-max))
-    (eval-print-last-sexp)))
+  (unless (require 'el-get nil 'noerror)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
+      (goto-char (point-max))
+      (eval-print-last-sexp))))
 
-;; cmake-mode
+(use-package abbrev
+  :diminish abbrev-mode
+  :defer t)
+
+(use-package autorevert
+  :config
+  (global-auto-revert-mode 1)
+  (setq auto-revert-verbose nil
+        global-auto-revert-non-file-buffers t))
+
 (use-package cmake-mode
   :ensure t
-  :mode ("\\.cmake\\'" "CMakeLists.txt"))
+  :mode ("\\.cmake\\'" "CMakeLists\\.txt\\'"))
 
-;; company
 (use-package company
+  :diminish company-mode
   :ensure t
   :config
   (global-company-mode 1)
@@ -230,9 +244,30 @@
   (setq company-transformers '(company-sort-by-occurrence
                                company-sort-by-backend-importance)))
 
+(use-package company-c-headers
+  :requires company
+  :ensure t
+  :config
+  (add-to-list 'company-backends 'company-c-headers))
+
+(use-package company-irony
+  :ensure t
+  :requires company
+  :config
+  (add-to-list 'company-backends 'company-irony))
+
+(use-package company-quickhelp
+  :if (version<= "24.4" emacs-version)
+  :ensure t
+  :hook (global-company-mode . company-quickhelp-mode))
+
 (el-get-bundle company-quickhelp
   (eval-after-load 'company-mode
     (add-hook 'global-company-mode-hook 'company-quickhelp-mode)))
+
+(use-package dockerfile-mode
+  :ensure t
+  :mode "Dockerfile\\'")
 
 (use-package flycheck
   :ensure t
@@ -244,12 +279,16 @@
    '(flycheck-display-errors-delay 0.5)))
 
 (use-package flycheck-pos-tip
-  :requires (flycheck pos-tip)
+  :requires (flycheck)
   :ensure t
   :defer t
   :config
   (flycheck-pos-tip-mode))
 
+(use-package git-gutter-fringe+
+  :if (version<= "24.4" emacs-version)
+  :ensure t
+  :catch (lambda (k e) t))
 (el-get-bundle git-gutter-fringe+)
 
 (use-package google-c-style
@@ -259,12 +298,15 @@
   :config
   (add-hook 'c-mode-common-hook 'google-make-newline-indent))
 
+(use-package graphviz-dot-mode
+  :ensure t
+  :mode "\\.dot\\'")
+
 (use-package irony
   :ensure t
   :hook ((c-mode . irony-mode)
          (c++-mode . irony-mode))
   :config
-  (add-to-list 'company-backends 'company-irony)
   (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
   (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
 
@@ -275,7 +317,7 @@
 
 (use-package jedi
   :ensure t
-  :disabled ;; use el-get-bundle for emacs>=24.3
+  :if (version<= "24.4" emacs-version)
   :pin melpa-stable
   :hook (python-mode . jedi:setup)
   :config
@@ -290,7 +332,7 @@
   (add-hook 'python-mode-hook 'jedi:setup))
 
 (use-package company-jedi
-  :disabled ;; use el-get-bundle for emacs>=24.3
+  :if (version<= "24.4" emacs-version)
   :ensure t
   :pin melpa-stable
   :requires (jedi company)
@@ -302,19 +344,56 @@
 
 (use-package markdown-mode
   :ensure t
-  :mode ("\\.markdown\\'" "\\.md\\'"))
+  :mode (("\\.markdown\\'" . gfm-mode)
+         ("\\.md\\'" . gfm-mode)))
 
 (use-package popwin
   :ensure t
   :commands popwin-mode)
 
-(use-package pos-tip
-  :ensure t)
-
 (use-package python-mode
   :ensure t
   :disabled
   :mode "\\.pyx?\\'")
+
+;; save last cursor place
+(use-package saveplace
+  :config
+  (setq-default save-place t)
+  (setq save-place-file (concat user-emacs-directory "places")))
+
+;; slime
+(use-package slime-company
+  :ensure t
+  :defer t
+  :commands slime-company)
+
+(use-package slime
+  :after slime-company
+  :ensure t
+  :commands (slime slime-lisp-mode-hook slime-mode)
+  :config
+  (setq slime-contribs
+        '(slime-fancy slime-asdf slime-quicklisp slime-cl-indent slime-company))
+  (setq inferior-lisp-program "sbcl"
+        slime-net-coding-system 'utf-8-unix
+        slime-complete-symbol*-fancy t
+        slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
+  (slime-setup slime-contribs)
+  ;; (setq slime-lisp-implementations
+  ;;       '((euswank ("euswank") :coding-system utf-8-unix)))
+)
+
+;; use directory name instead of <num>
+(use-package uniquify
+  :config
+  (setq uniquify-buffer-name-style 'forward))
+
+;; writable dired
+(use-package wdired
+  :config
+  (setq wdired-allow-to-change-permissions t)
+  (define-key dired-mode-map "e" 'wdired-change-to-wdired-mode))
 
 (use-package web-mode
   :ensure t
@@ -359,26 +438,3 @@
              (format "/opt/ros/%s/share/emacs/site-lisp" ros/distro))
 (require 'rosemacs-config nil t)
 (put 'dired-find-alternate-file 'disabled nil)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;  euswank
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; slime
-(use-package slime
-  :ensure t
-  :commands slime
-  :config
-  (use-package slime-quicklisp
-    :ensure t
-    :config
-    (slime-setup
-     '(slime-fancy
-       slime-quicklisp
-       ;; slime-euswank
-       ))
-    ;; (setq slime-lisp-implementations
-    ;;       '((euswank ("euswank") :coding-system utf-8-unix)))
-    )
-  )
-
