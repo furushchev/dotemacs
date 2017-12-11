@@ -34,6 +34,10 @@
 (setq byte-compile-warnings
       '(not nresolved free-vars callargs redefine obsolete noruntime cl-functions interactive-only))
 
+;; chmod +x if there is shebang on file top
+(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;; Keybindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -65,6 +69,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;; Appearances
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; back slash instead of yen
+(define-key global-map [?¥] [?\\])
 
 ;; highlight parenthenesses
 (setq show-paren-delay 0)
@@ -130,6 +137,9 @@
 (add-hook 'c-mode-common-hook '(lambda ()
                                  (c-set-style "linux")
                                  (setq c-basic-offset tab-width)))
+(add-hook 'sh-mode-hook '(lambda ()
+                           (setq sh-basic-offset tab-width
+                                 sh-indentation tab-width)))
 
 ;; encodings
 (set-language-environment  'Japanese)
@@ -143,7 +153,7 @@
   (set-file-name-coding-system 'utf-8))
 (setq locale-coding-system 'utf-8)
 (global-font-lock-mode t)
-(setq default-enable-multibyte-characters t)
+(set-buffer-multibyte t)
 
 ;; automatically make directory
 (add-hook 'find-file-not-found-functions
@@ -174,8 +184,25 @@
 (define-key dired-mode-map "e" 'wdired-change-to-wdired-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;; el-get
+;;;;;; use-package
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; use-package
+(require 'package)
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
+;;(add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/"))
+;;(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
+(add-to-list 'load-path "~/.emacs.d/elpa")
+(add-to-list 'load-path "~/.emacs.d/site-lisp")
+(package-initialize)
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(eval-when-compile (require 'use-package))
+(use-package diminish :ensure t)
+(require 'bind-key)
 
 ;; el-get
 (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
@@ -187,72 +214,135 @@
     (goto-char (point-max))
     (eval-print-last-sexp)))
 
-;; el-get-lock
-(el-get-bundle tarao/el-get-lock
-  (el-get-lock)
-  (el-get-lock-unlock 'el-get))
-
-;; ag
-(el-get-bundle ag)
-
 ;; cmake-mode
-(el-get-bundle cmake-mode)
+(use-package cmake-mode
+  :ensure t
+  :mode ("\\.cmake\\'" "CMakeLists.txt"))
 
 ;; company
-(el-get-bundle company
+(use-package company
+  :ensure t
+  :config
   (global-company-mode 1)
-  (define-key company-active-map (kbd "<tab>") 'company-complete-selection))
+  (setq company-idle-delay 0.05)
+  (setq company-minimum-prefix-length 2)
+  (setq company-selection-wrap-around t)
+  (setq company-transformers '(company-sort-by-occurrence
+                               company-sort-by-backend-importance)))
 
-;; git
+(el-get-bundle company-quickhelp
+  (eval-after-load 'company-mode
+    (add-hook 'global-company-mode-hook 'company-quickhelp-mode)))
+
+(use-package flycheck
+  :ensure t
+  :defer t
+  :config
+  (global-flycheck-mode)
+  (custom-set-variables
+   '(flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
+   '(flycheck-display-errors-delay 0.5)))
+
+(use-package flycheck-pos-tip
+  :requires (flycheck pos-tip)
+  :ensure t
+  :defer t
+  :config
+  (flycheck-pos-tip-mode))
+
 (el-get-bundle git-gutter-fringe+)
 
-;; irony
-(el-get-bundle irony-eldoc)
-(el-get-bundle irony-mode
-  (add-to-list 'company-backends 'company-irony)
-  (add-hook 'irony-mode-hook 'irony-eldoc)
-  (add-hook 'c-mode-common-hook 'irony-mode))
+(use-package google-c-style
+  :ensure t
+  :hook ((c-mode . google-set-c-style)
+         (c++-mode . google-set-c-style))
+  :config
+  (add-hook 'c-mode-common-hook 'google-make-newline-indent))
 
-;; jedi
-(el-get-bundle jedi
+(use-package irony
+  :ensure t
+  :hook ((c-mode . irony-mode)
+         (c++-mode . irony-mode))
+  :config
+  (add-to-list 'company-backends 'company-irony)
+  (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
+
+(use-package irony-eldoc
+  :ensure t
+  :requires irony-mode
+  :hook (irony-mode . irony-eldoc))
+
+(use-package jedi
+  :ensure t
+  :disabled ;; use el-get-bundle for emacs>=24.3
+  :pin melpa-stable
+  :hook (python-mode . jedi:setup)
+  :config
   (load "~/.emacs.d/subr-x.el")
-  (add-hook 'python-mode-hook 'jedi:setup)
   (setq-default jedi:complete-on-dot t)
   (setq-default jedi:use-shortcuts t))
 
-;; markdown-mode
-(el-get-bundle markdown-mode)
+(el-get-bundle jedi
+  (load "~/.emacs.d/subr-x.el")
+  (setq-default jedi:complete-on-dot t)
+  (setq-default jedi:use-shortcuts t)
+  (add-hook 'python-mode-hook 'jedi:setup))
 
-;; popwin
-(el-get-bundle popwin)
+(use-package company-jedi
+  :disabled ;; use el-get-bundle for emacs>=24.3
+  :ensure t
+  :pin melpa-stable
+  :requires (jedi company)
+  :config
+  (add-to-list 'company-backends 'company-jedi))
 
-;; python-mode
-(el-get-bundle python-mode
-  (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode)))
+(el-get-bundle company-jedi
+  (add-to-list 'company-backends 'company-jedi))
 
-;; slime
-(el-get-bundle slime)
+(use-package markdown-mode
+  :ensure t
+  :mode ("\\.markdown\\'" "\\.md\\'"))
 
-;; web-mode
-(el-get-bundle web-mode
+(use-package popwin
+  :ensure t
+  :commands popwin-mode)
+
+(use-package pos-tip
+  :ensure t)
+
+(use-package python-mode
+  :ensure t
+  :disabled
+  :mode "\\.pyx?\\'")
+
+(use-package web-mode
+  :ensure t
+  :mode (("\\.phtml$" . web-mode)
+         ("\\.tpl\\.php$" . web-mode)
+         ("\\.html?$" . web-mode)
+         ("\\.jsx?$" . web-mode)
+         ("\\.ejs$" . web-mode))
+  :config
   (setq-default web-mode-markup-indent-offset 2
                 web-mode-css-indent-offset 2
-                web-mode-code-indent-offset 2)
-  (add-to-list 'auto-mode-alist '("\\.phtml$" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.tpl\\.php$" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.html?$" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.ejs$" . web-mode)))
+                web-mode-code-indent-offset 2))
 
-;; yaml-mode
-(el-get-bundle yaml-mode)
+(use-package yaml-mode
+  :ensure t
+  :mode "\\.ya?ml$")
 
-;; yatemplate
-(el-get-bundle yatemplate
+(use-package yatemplate
+  :ensure t
+  :config
   (yatemplate-fill-alist)
   (auto-insert-mode 1))
 
-(el-get-bundle yasnippet
+(use-package yasnippet
+  :after company
+  :ensure t
+  :defer t
+  :config
   (setq yas-snippet-dirs
         '("~/.emacs.d/snippets"
           "~/.emacs.d/el-get/yasnippet/snippets"))
@@ -267,5 +357,28 @@
 (setq-default ros/distro (or (getenv "ROS_DISTRO") "indigo"))
 (add-to-list 'load-path
              (format "/opt/ros/%s/share/emacs/site-lisp" ros/distro))
-(require 'rosemacs-config)
+(require 'rosemacs-config nil t)
 (put 'dired-find-alternate-file 'disabled nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;  euswank
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; slime
+(use-package slime
+  :ensure t
+  :commands slime
+  :config
+  (use-package slime-quicklisp
+    :ensure t
+    :config
+    (slime-setup
+     '(slime-fancy
+       slime-quicklisp
+       ;; slime-euswank
+       ))
+    ;; (setq slime-lisp-implementations
+    ;;       '((euswank ("euswank") :coding-system utf-8-unix)))
+    )
+  )
+
