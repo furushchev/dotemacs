@@ -188,8 +188,37 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;; use-package
+;;;;;; 3rdparty libraries
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; el-get for keep backward compatibility
+(if (version<= "24.4" emacs-version)
+    (defmacro el-get-bundle (name &rest form) t) ;; just ignore el-get
+  (progn
+    (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+
+    (unless (require 'el-get nil 'noerror)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
+        (goto-char (point-max))
+        (eval-print-last-sexp)))))
+
+(el-get-bundle company-quickhelp
+  (eval-after-load 'company-mode
+    (add-hook 'global-company-mode-hook 'company-quickhelp-mode)))
+
+(el-get-bundle git-gutter-fringe+)
+
+(el-get-bundle jedi
+  (load "~/.emacs.d/subr-x.el")
+  (setq-default jedi:complete-on-dot t)
+  (setq-default jedi:use-shortcuts t)
+  (add-hook 'python-mode-hook 'jedi:setup))
+
+(defvar company-backends nil)
+(el-get-bundle company-jedi
+  (add-to-list 'company-backends 'company-jedi))
 
 ;; use-package
 (require 'package)
@@ -206,18 +235,6 @@
 (eval-when-compile (require 'use-package))
 (use-package diminish :ensure t)
 (require 'bind-key)
-
-;; el-get for keep backward compatibility
-(defmacro el-get-bundle (name &rest form) t)
-(when (version< emacs-version "24.4")
-  (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
-
-  (unless (require 'el-get nil 'noerror)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
-      (goto-char (point-max))
-      (eval-print-last-sexp))))
 
 (use-package abbrev
   :diminish abbrev-mode
@@ -256,14 +273,10 @@
   :config
   (add-to-list 'company-backends 'company-irony))
 
-(use-package company-quickhelp
-  :if (version<= "24.4" emacs-version)
-  :ensure t
-  :hook (global-company-mode . company-quickhelp-mode))
-
-(el-get-bundle company-quickhelp
-  (eval-after-load 'company-mode
-    (add-hook 'global-company-mode-hook 'company-quickhelp-mode)))
+(unless (locate-library "company-quickhelp")
+  (use-package company-quickhelp
+    :ensure t
+    :hook (global-company-mode . company-quickhelp-mode)))
 
 (use-package dockerfile-mode
   :ensure t
@@ -285,11 +298,10 @@
   :config
   (flycheck-pos-tip-mode))
 
-(use-package git-gutter-fringe+
-  :if (version<= "24.4" emacs-version)
-  :ensure t
-  :catch (lambda (k e) t))
-(el-get-bundle git-gutter-fringe+)
+(unless (locate-library "git-gutter-fringe+")
+  (use-package git-gutter-fringe+
+    :ensure t
+    :catch (lambda (k e) t)))
 
 (use-package google-c-style
   :ensure t
@@ -315,32 +327,23 @@
   :requires irony-mode
   :hook (irony-mode . irony-eldoc))
 
-(use-package jedi
-  :ensure t
-  :if (version<= "24.4" emacs-version)
-  :pin melpa-stable
-  :hook (python-mode . jedi:setup)
-  :config
-  (load "~/.emacs.d/subr-x.el")
-  (setq-default jedi:complete-on-dot t)
-  (setq-default jedi:use-shortcuts t))
+(unless (locate-library "jedi")
+  (use-package jedi
+    :ensure t
+    :pin melpa-stable
+    :hook (python-mode . jedi:setup)
+    :config
+    (load "~/.emacs.d/subr-x.el")
+    (setq-default jedi:complete-on-dot t)
+    (setq-default jedi:use-shortcuts t)))
 
-(el-get-bundle jedi
-  (load "~/.emacs.d/subr-x.el")
-  (setq-default jedi:complete-on-dot t)
-  (setq-default jedi:use-shortcuts t)
-  (add-hook 'python-mode-hook 'jedi:setup))
-
-(use-package company-jedi
-  :if (version<= "24.4" emacs-version)
-  :ensure t
-  :pin melpa-stable
-  :requires (jedi company)
-  :config
-  (add-to-list 'company-backends 'company-jedi))
-
-(el-get-bundle company-jedi
-  (add-to-list 'company-backends 'company-jedi))
+(unless (locate-library "company-jedi")
+  (use-package company-jedi
+    :ensure t
+    :pin melpa-stable
+    :requires (jedi company)
+    :config
+    (add-to-list 'company-backends 'company-jedi)))
 
 (use-package markdown-mode
   :ensure t
