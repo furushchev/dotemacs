@@ -288,7 +288,7 @@
   :ensure t
   :diminish flycheck-mode
   :config
-  (global-flycheck-mode 1)
+  (global-flycheck-mode)
   (custom-set-variables
    '(flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
    '(flycheck-display-errors-delay 0.5)))
@@ -298,6 +298,12 @@
   :ensure t
   :config
   (flycheck-pos-tip-mode))
+
+(use-package git-gutter+
+  :ensure t
+  :diminish t
+  :config
+  (global-git-gutter+-mode))
 
 (unless (locate-library "git-gutter-fringe+")
   (use-package git-gutter-fringe+
