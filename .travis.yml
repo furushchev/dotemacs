@@ -1,24 +1,22 @@
-sudo: false
 language:
   - generic
 matrix:
   include:
     - os: linux
       dist: trusty
-      sudo: required
-    - os: linux
-      dist: precise
-      sudo: false
     - os: osx
+  allow_failures:
+    - env:
+        os: osx
 addons:
   apt:
-    sources:
-      - cassou-emacs
     packages:
       - git
       - emacs24-nox
       - wget
       - curl
+      - make
+      - texinfo
 install:
   - if [ $TRAVIS_OS_NAME = "osx" ]; then brew update -y; brew install wget emacs git curl || true; fi
   - if [ $TRAVIS_OS_NAME != "osx" ]; then sudo apt-get install -qq -y git emacs24-nox wget curl make texinfo || true; fi
