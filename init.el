@@ -220,6 +220,8 @@
 (el-get-bundle company-jedi
   (add-to-list 'company-backends 'company-jedi))
 
+(el-get-bundle markdown-mode)
+
 ;; use-package
 (require 'package)
 (setq package-enable-at-startup nil)
@@ -343,10 +345,11 @@
     :config
     (add-to-list 'company-backends 'company-jedi)))
 
-(use-package markdown-mode
-  :ensure t
-  :mode (("\\.markdown\\'" . gfm-mode)
-         ("\\.md\\'" . gfm-mode)))
+(unless (locate-library "markdown-mode")
+  (use-package markdown-mode
+    :ensure t
+    :mode (("\\.markdown\\'" . gfm-mode)
+           ("\\.md\\'" . gfm-mode))))
 
 (use-package popwin
   :ensure t
