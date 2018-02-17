@@ -111,7 +111,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(blink-matching-paren t)
- '(display-time-mode t)
+ '(display-time-mode nil)
  '(flycheck-display-errors-delay 0.5)
  '(flycheck-display-errors-function
    (function flycheck-display-error-messages-unless-error-list))
