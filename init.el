@@ -284,9 +284,8 @@
 
 (use-package flycheck
   :ensure t
-  :defer t
   :config
-  (global-flycheck-mode)
+  (global-flycheck-mode 1)
   (custom-set-variables
    '(flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
    '(flycheck-display-errors-delay 0.5)))
@@ -294,7 +293,6 @@
 (use-package flycheck-pos-tip
   :requires (flycheck)
   :ensure t
-  :defer t
   :config
   (flycheck-pos-tip-mode))
 
