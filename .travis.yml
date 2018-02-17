@@ -21,7 +21,7 @@ addons:
       - curl
 install:
   - if [ $TRAVIS_OS_NAME = "osx" ]; then brew update -y; brew install wget emacs git curl || true; fi
-  - if [ $TRAVIS_OS_NAME != "osx" ]; then sudo apt-get install -qq -y git emacs24-nox wget curl || true; fi
+  - if [ $TRAVIS_OS_NAME != "osx" ]; then sudo apt-get install -qq -y git emacs24-nox wget curl make texinfo || true; fi
 before_script:
   - rm -rf $HOME/.emacs.d
   - ln -s `pwd` $HOME/.emacs.d

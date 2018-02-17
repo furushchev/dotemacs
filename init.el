@@ -205,8 +205,9 @@
         (eval-print-last-sexp)))))
 
 (el-get-bundle company-quickhelp
-  (eval-after-load 'company-mode
-    (add-hook 'global-company-mode-hook 'company-quickhelp-mode)))
+  (eval-after-load 'pos-tip
+    (eval-after-load 'company-mode
+      (add-hook 'global-company-mode-hook 'company-quickhelp-mode))))
 
 (el-get-bundle git-gutter-fringe+)
 
@@ -221,6 +222,8 @@
   (add-to-list 'company-backends 'company-jedi))
 
 (el-get-bundle markdown-mode)
+(el-get-bundle pos-tip)
+(el-get-bundle slime-company)
 
 ;; use-package
 (require 'package)
@@ -299,11 +302,12 @@
   :config
   (flycheck-pos-tip-mode))
 
-(use-package git-gutter+
-  :ensure t
-  :diminish t
-  :config
-  (global-git-gutter+-mode))
+(unless (locate-library "git-gutter+")
+  (use-package git-gutter+
+    :ensure t
+    :diminish t
+    :config
+    (global-git-gutter+-mode)))
 
 (unless (locate-library "git-gutter-fringe+")
   (use-package git-gutter-fringe+
@@ -374,10 +378,11 @@
   (setq save-place-file (concat user-emacs-directory "places")))
 
 ;; slime
-(use-package slime-company
-  :ensure t
-  :defer t
-  :commands slime-company)
+(unless (locate-library "slime-company")
+  (use-package slime-company
+    :ensure t
+    :defer t
+    :commands slime-company))
 
 (use-package slime
   :after slime-company
