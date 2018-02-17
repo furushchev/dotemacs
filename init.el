@@ -286,6 +286,7 @@
 
 (use-package flycheck
   :ensure t
+  :diminish flycheck-mode
   :config
   (global-flycheck-mode 1)
   (custom-set-variables
@@ -425,6 +426,7 @@
   :after company
   :ensure t
   :defer t
+  :diminish yas-minor-mode
   :config
   (setq yas-snippet-dirs
         '("~/.emacs.d/snippets"
