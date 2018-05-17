@@ -384,20 +384,21 @@
     :defer t
     :commands slime-company))
 
+(add-to-list 'load-path "/home/furushchev/euswank")
+(require 'euslisp-slime)
 (use-package slime
-  :after slime-company
+  ;;  :after slime-company
   :ensure t
   :commands (slime slime-lisp-mode-hook slime-mode)
   :config
-  (setq slime-contribs
-        '(slime-fancy slime-asdf slime-quicklisp slime-cl-indent slime-company))
-  (setq inferior-lisp-program "sbcl"
+  (require 'slime-autoloads)
+  (slime-setup
+   '(slime-fancy slime-asdf slime-quicklisp slime-cl-indent slime-company))
+  (setq inferior-lisp-program (executable-find "sbcl")
         slime-net-coding-system 'utf-8-unix
+        slime-protocol-version 'ignore
         slime-complete-symbol*-fancy t
         slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
-  (slime-setup slime-contribs)
-  ;; (setq slime-lisp-implementations
-  ;;       '((euswank ("euswank") :coding-system utf-8-unix)))
 )
 
 ;; use directory name instead of <num>
