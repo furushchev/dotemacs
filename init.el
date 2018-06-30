@@ -384,8 +384,8 @@
     :defer t
     :commands slime-company))
 
-(add-to-list 'load-path "/home/furushchev/euswank")
-(require 'euslisp-slime)
+(add-to-list 'load-path "/home/furushchev/euslime")
+(require 'euslime nil t)
 (use-package slime
   ;;  :after slime-company
   :ensure t
