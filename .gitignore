@@ -93,3 +93,8 @@ irony
 .python-environments
 el-get
 places
+company-statistics-cache.el
+
+!straight/
+straight/*
+!straight/versions/
