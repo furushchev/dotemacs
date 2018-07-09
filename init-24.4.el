@@ -90,7 +90,7 @@
         company-selection-wrap-around t
         company-show-numbers t
         company-require-match 'never
-        company-auto-complete t)
+        company-auto-complete nil)
   (setq company-backends
         '((company-jedi
            company-capf
@@ -137,6 +137,7 @@
   ;; :requires company
   ;; :commands global-company-mode
   :config
+  (setq-default company-quickhelp-delay 0.0)
   (company-quickhelp-mode t))
 
 (use-package company-statistics
@@ -165,6 +166,7 @@
    '(flycheck-display-errors-function #'flycheck-pos-tip-error-messages)))
 
 (use-package git-gutter+
+  :diminish git-gutter+
   :config
   (global-git-gutter+-mode))
 
