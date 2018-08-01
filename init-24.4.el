@@ -61,7 +61,11 @@
          ("\\.md\\'" . gfm-mode)))
 
 (use-package popwin
-  :commands popwin-mode)
+  :config
+  (popwin-mode)
+  (setq-default popwin:popup-window-height 20)
+  (add-to-list 'popwin:special-display-config
+               '("*company-documentation*" :position bottom :noselect :dedicated)))
 
 (use-package web-mode
   :mode (("\\.phtml$" . web-mode)
@@ -79,76 +83,56 @@
 
 
 ;; company
-
 (use-package company
-  ;; :diminish company-mode
-  :after (company-c-headers company-irony company-jedi company-quickhelp yasnippet)
-  :init
-  (setq company-backends '())
+  :diminish company-mode
   :config
   (global-company-mode t)
-  (setq company-idle-delay 0.05
-        company-minimum-prefix-length 2
-        company-selection-wrap-around t
-        company-show-numbers t
-        company-require-match 'never
-        company-auto-complete nil)
+  (setq-default company-idle-delay 0.05
+                company-selection-wrap-around t
+                company-require-match 'never
+                company-auto-complete nil)
+  (add-to-list 'company-backends 'company-yasnippet)
+  ;; flatten
   (setq company-backends
-        '((company-jedi
-           company-capf
-           company-c-headers
-           company-irony
-           company-clang
-           company-gtags
-           company-etags
-           company-keywords
-           company-cmake
-           company-nxml
-           company-css
-           company-yasnippet
-           company-semantic
-           company-files
-           company-dabbrev-code)
-          company-dabbrev))
-  (setq company-frontends
-        '(company-pseudo-tooltip-unless-just-one-frontend
-          company-preview-frontend
-          company-echo-metadata-frontend))
+        (list (apply #'append (mapcar #'(lambda (x) (if (listp x) x (list x))) company-backends))))
   (bind-key "TAB" 'company-complete-common-or-cycle company-active-map)
   (bind-key "S-TAB" 'company-select-previous company-active-map)
   (bind-key "M-[ z" 'company-select-previous company-active-map)
+  (bind-key "M-d" 'company-show-doc-buffer company-active-map)
   )
 
 
 (use-package company-c-headers
-  ;; :requires company
+  :requires company
   :config
   (add-to-list 'company-backends 'company-c-headers))
 
 (use-package company-irony
-  ;; :requires company
+  :requires (company irony)
   :config
   (add-to-list 'company-backends 'company-irony))
 
 (use-package company-jedi
-  ;; :requires (jedi-core company)
+  :requires (jedi-core company)
   :config
   (add-to-list 'company-backends 'company-jedi))
 
 (use-package company-quickhelp
-  ;; :requires company
-  ;; :commands global-company-mode
+  :requires company
   :config
-  (setq-default company-quickhelp-delay 0.0)
-  (company-quickhelp-mode t))
+  (setq-default company-quickhelp-delay 0.5
+                company-quickhelp-use-propertized-text t)
+  (company-quickhelp-mode))
 
 (use-package company-statistics
+  :requires company
   :config
   (company-statistics-mode))
 
 (use-package slime-company
   :requires (slime company)
-  :commands slime-company)
+  :config
+  (add-to-list 'slime-contribs 'slime-company))
 
 ;; others
 
@@ -179,13 +163,18 @@
   :commands (slime slime-lisp-mode-hook slime-mode)
   :config
   (require 'slime-autoloads)
-  (slime-setup
-   '(slime-fancy slime-asdf slime-quicklisp slime-cl-indent slime-company))
   (setq inferior-lisp-program (executable-find "sbcl")
         slime-net-coding-system 'utf-8-unix
         slime-protocol-version 'ignore
         slime-complete-symbol*-fancy t
-        slime-complete-symbol-function 'slime-fuzzy-complete-symbol))
+        slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
+  (dolist (contrib '(slime-asdf
+                     slime-banner
+                     slime-cl-indent
+                     slime-fancy
+                     slime-quicklisp))
+    (add-to-list 'slime-contribs contrib))
+  (slime-setup))
 
 (use-package yatemplate
   :config
