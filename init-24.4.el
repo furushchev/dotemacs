@@ -27,8 +27,6 @@
 (use-package dockerfile-mode
   :mode "Dockerfile\\'")
 
-(use-package euslisp-mode)
-
 (use-package google-c-style
   :hook ((c-mode . google-set-c-style)
          (c++-mode . google-set-c-style))
