@@ -1,5 +1,4 @@
 ;; setup straight.el
-
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
       (bootstrap-version 4))
@@ -18,6 +17,9 @@
 
 (use-package diminish)
 (use-package bind-key)
+
+;; color theme
+(load-theme 'tango-dark t)
 
 ;; language
 

@@ -165,9 +165,11 @@
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
 
 ;; el-get for keep backward compatibility
-(if (version< emacs-version "24.4")
-    (load "~/.emacs.d/init-24.3.el" t)
-  (load "~/.emacs.d/init-24.4.el" t))
+(cond
+ ((version< emacs-version "24.4")
+  (load "~/.emacs.d/init-24.3.el" t))
+ (t
+  (load "~/.emacs.d/init-latest.el" t)))
 
 ;; automatically make directory
 (add-hook 'find-file-not-found-functions
