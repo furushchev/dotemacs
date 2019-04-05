@@ -164,6 +164,15 @@
 
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
 
+;; roswell
+(when (file-exists-p (expand-file-name "~/.roswell/helper.el"))
+  (load (expand-file-name "~/.roswell/helper.el"))
+  (setq slime-lisp-implementations
+        `((ros ("ros" "run"))
+          (sbcl ("sbcl"))
+          (abcl ("abcl"))
+          (clisp ("clisp")))))
+
 ;; el-get for keep backward compatibility
 (cond
  ((version< emacs-version "24.4")
