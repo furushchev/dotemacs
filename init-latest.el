@@ -35,6 +35,17 @@
   :config
   (add-hook 'c-mode-common-hook 'google-make-newline-indent))
 
+(use-package go-mode
+  :init
+  (add-to-list 'exec-path (expand-file-name (concat (getenv "GOROOT") "bin")))
+  (add-to-list 'exec-path (expand-file-name "~/go/bin"))
+  :config
+;;  (add-hook 'go-mode-hook 'flycheck-mode)
+  (add-hook 'go-mode-hook (lambda ()
+                            (add-hook 'before-save-hook 'gofmt-before-save)
+                            (setq indent-tabs-mode nil
+                                  c-basic-offset 4 tab-width 4))))
+
 (use-package graphviz-dot-mode
   :mode "\\.dot\\'")
 
@@ -106,6 +117,11 @@
   :requires company
   :config
   (add-to-list 'company-backends 'company-c-headers))
+
+(use-package company-go
+  :requires (company go-mode)
+  :config
+  (add-to-list 'company-backends 'company-go))
 
 (use-package company-irony
   :requires (company irony)
