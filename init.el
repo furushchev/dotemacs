@@ -7,7 +7,7 @@
   "Yuki Furuta")
 
 (defun user-mail-address ()
-  "furushchev@jsk.imi.i.u-tokyo.ac.jp")
+  "me@furushchev.ru")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;; Performance
