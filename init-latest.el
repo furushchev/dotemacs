@@ -53,6 +53,7 @@
   :hook ((c-mode . irony-mode)
          (c++-mode . irony-mode))
   :config
+  (custom-set-variables '(irony-additional-clang-options '("-std=c++11")))
   (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
   (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
 
