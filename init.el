@@ -143,7 +143,10 @@
                                (setq python-indent-offset 4)))
 (add-hook 'c-mode-common-hook '(lambda ()
                                  (c-set-style "linux")
-                                 (setq c-basic-offset tab-width)))
+                                 (setq c-basic-offset tab-width)
+                                 (c-set-offset 'inline-open 0)
+                                 (c-set-offset 'inline-close 0)
+                                 (c-set-offset 'member-init-intro 0)))
 (add-hook 'sh-mode-hook '(lambda ()
                            (setq sh-basic-offset tab-width
                                  sh-indentation tab-width)))
