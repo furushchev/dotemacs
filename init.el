@@ -146,7 +146,10 @@
                                  (setq c-basic-offset tab-width)
                                  (c-set-offset 'inline-open 0)
                                  (c-set-offset 'inline-close 0)
-                                 (c-set-offset 'member-init-intro 0)))
+                                 (c-set-offset 'member-init-intro 0)
+                                 (c-set-offset 'innamespace 0)
+                                 (c-set-offset 'arglist-intro 4)
+                                 ))
 (add-hook 'sh-mode-hook '(lambda ()
                            (setq sh-basic-offset tab-width
                                  sh-indentation tab-width)))
