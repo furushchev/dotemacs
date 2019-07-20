@@ -16,7 +16,7 @@
 ;; expand gc threshold at start time
 (defconst initial-gc-cons-threshold gc-cons-threshold
   "initial value of gc-conc-threshold at start-up time")
-(setq gc-cons-threshold (* 10 gc-cons-threshold))
+(setq gc-cons-threshold (* 100 gc-cons-threshold))
 (add-hook 'after-init-hook
           (lambda () (setq gc-cons-threshold initial-gc-cons-threshold)))
 
