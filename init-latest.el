@@ -1,7 +1,11 @@
 ;; setup straight.el
+(setq package-enable-at-startup nil
+      straight-use-package-by-default t)
+(defvar bootstrap-version)
+(defvar straight-repository-user "raxod502")
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 4))
+      (bootstrap-version 5))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
@@ -9,11 +13,9 @@
          'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
+  (load bootstrap-file nil 'nomessage))
 
 (straight-use-package 'use-package)
-(setq package-enable-at-startup nil
-      straight-use-package-by-default t)
 
 (use-package diminish)
 (use-package bind-key)
