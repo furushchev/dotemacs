@@ -25,6 +25,9 @@
 
 ;; language
 
+(use-package cuda-mode
+  :mode ("\\.cu\\'" "\\.cuh\\'"))
+
 (use-package cmake-mode
   :mode ("\\.cmake\\'" "CMakeLists\\.txt\\'"))
 
@@ -95,6 +98,8 @@
 (use-package yaml-mode
   :mode "\\.ya?ml$")
 
+(use-package rust-mode
+  :mode "\\.rs$")
 
 ;; company
 (use-package company
