@@ -1,42 +1,66 @@
 #!/usr/bin/env bash
 
-install_app() {
-  local pkg_apt=$1
-  local pkg_brew=${2:-$1}
-  echo "Installing $pkg ..."
-  if [ -f "/etc/debian_version" ]; then
-    sudo apt-get install -y -qq $pkg_apt
-  elif [ "`uname`" = "Darwin" ]; then
-    brew install $pkg_brew
-  else
-    echo "unsupported OS detected."
-    echo "Please manually install $pkg_apt"
+set -e
+
+setup_emacs() {
+  if [ ! -e /etc/lsb-release ]; then
+    echo "Only Ubuntu is supported"
+    return
   fi
+
+  . /etc/lsb-release
+  if [ "$DISTRIB_ID" != "Ubuntu" ]; then
+    echo "Only Ubuntu is supported"
+    return
+  fi
+
+  if [ "$(which emacs)" = "" ]; then
+    echo "Emacs is not installed"
+    return
+  fi
+
+  EMACS_VERSION=${EMACS_VERSION:-"$(emacs --version | head -n1 | cut -d' ' -f3)"}
+
+  echo "Installed emacs version: ${EMACS_VERSION}"
+
+  if dpkg --compare-version ${EMACS_VERSION} "lt" 27; then
+    EMACS_CONFIG_DIR=${EMACS_CONFIG_DIR:-"$HOME/.emacs.d"}
+  else
+    XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
+    EMACS_CONFIG_DIR=${EMACS_CONFIG_DIR:-"$XDG_CONFIG_HOME/emacs"}
+  fi
+
+  echo "Emacs configuration directory: ${EMACS_CONFIG_DIR}"
+
+  if [ -d "${EMACS_CONFIG_DIR}" ]; then
+    echo "The directory ${EMACS_CONFIG_DIR} already exists."
+    echo "Moving ${EMACS_CONFIG_DIR} -> ${EMACS_CONFIG_DIR}.bak ..."
+    sudo mv -f "${EMACS_CONFIG_DIR}" "${EMACS_CONFIG_DIR}.bak"
+  fi
+
+  sudo apt-get update -qq
+
+  if [ "`which git`" = "" ]; then
+    echo "Installing git..."
+    sudo apt-get install -qq -y git
+  fi
+
+  git clone https://github.com/furushchev/dotemacs.git ${EMACS_CONFIG_DIR}
+  (cd ${EMACS_CONFIG_DIR} && git submodule update --init)
+
+  if [ "`which pip`" = "" ]; then
+    sudo apt-get install -qq -y python-pip
+  fi
+
+  if [ "`which clang`" = "" ]; then
+    sudo apt-get install -qq -y clang clang-dev
+  fi
+
+  sudo pip install -U virtualenv jedi
+
+  emacs -batch --eval '(setq debug-on-error t)' -l ${EMACS_CONFIG_DIR}/init.el
+
+  echo "Installation is done!"
 }
 
-if [ -d "$HOME/.emacs.d" ]; then
-  echo "The directory .emacs.d already exists."
-  echo "Moving .emacs.d -> .emacs.d.bak ..."
-  sudo mv -f "$HOME/.emacs.d" "$HOME/.emacs.d.bak"
-fi
-
-if [ "`which git`" = "" ]; then
-  install_app git
-fi
-
-git clone https://github.com/furushchev/dotemacs.git $HOME/.emacs.d
-(cd $HOME/.emacs.d && git submodule update --init)
-
-if [ "`which emacs`" = "" ]; then
-  install_app emacs24-nox emacs
-fi
-
-if [ "`which pip`" = "" ]; then
-  install_app python-pip
-fi
-
-sudo pip install -U virtualenv
-
-emacs -batch --eval '(setq debug-on-error t)' -l $HOME/.emacs.d/init.el
-
-echo "Installation is done!"
+setup_emacs

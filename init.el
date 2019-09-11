@@ -125,11 +125,11 @@
 ;; backup in ~/.emacs.d/backup
 (setq make-backup-files t)
 (add-to-list 'backup-directory-alist
-             `("\\.*$" . ,(expand-file-name "~/.emacs.d/backup/")))
+             `("\\.*$" . ,(expand-file-name (concat user-emacs-directory "backup"))))
 
 ;; auto-save files in ~/.emacs.d/backup
 (setq auto-save-file-name-transforms
-      `((".*" ,(expand-file-name "~/.emacs.d/backup/") t)))
+      `((".*" ,(expand-file-name (concat user-emacs-directory "backup") t))))
 
 ;; keep new line on file end
 (setq require-final-newline t)
@@ -168,7 +168,7 @@
 (global-font-lock-mode t)
 (set-buffer-multibyte t)
 
-(add-to-list 'load-path "~/.emacs.d/site-lisp")
+(add-to-list 'load-path (expand-file-name (concat user-emacs-directory "site-lisp")))
 
 ;; roswell
 (when (file-exists-p (expand-file-name "~/.roswell/helper.el"))
@@ -199,11 +199,13 @@
 (dolist (hook '(emacs-lisp-mode-hook
                 lisp-interaction-mode-hook))
   (add-hook hook #'eldoc-mode))
-(diminish 'eldoc-mode)
+(when (require 'diminish nil 'noerror)
+  (diminish 'eldoc-mode))
 
 ;; abbrev
 (setq-default abbrev-mode t)
-(diminish 'abbrev-mode)
+(when (require 'diminish nil 'noerror)
+  (diminish 'abbrev-mode))
 
 ;; auto revert
 (global-auto-revert-mode t)
@@ -229,4 +231,4 @@
 ;;;;;; 3rdparty libraries
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'euslisp-mode)
+(require 'euslisp-mode nil 'noerror)

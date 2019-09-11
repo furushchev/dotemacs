@@ -34,6 +34,9 @@
 (use-package dockerfile-mode
   :mode "Dockerfile\\'")
 
+(use-package euslisp-mode
+  :mode "\\.l\\'")
+
 (use-package google-c-style
   :hook ((c-mode . google-set-c-style)
          (c++-mode . google-set-c-style))
@@ -69,7 +72,6 @@
 (use-package jedi-core
   :config
   (add-hook 'python-mode-hook 'jedi:setup)
-  ;; (load "~/.emacs.d/subr-x.el")
   (setq-default jedi:complete-on-dot t)
   (setq-default jedi:use-shortcuts t))
 
@@ -209,7 +211,7 @@
   :diminish yas-minor-mode
   :config
   (setq yas-snippet-dirs
-        '("~/.emacs.d/snippets"
-          "~/.emacs.d/el-get/yasnippet/snippets"))
+        '(,(concat user-emacs-directory "snippets")
+          ,(concat user-emacs-directory "el-get/yasnippet/snippets")))
   (bind-key "TAB" nil yas-keymap)
   (yas-global-mode t))
