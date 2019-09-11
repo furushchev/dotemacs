@@ -182,9 +182,9 @@
 ;; el-get for keep backward compatibility
 (cond
  ((version< emacs-version "24.4")
-  (load "~/.emacs.d/init-24.3.el" t))
+  (load (expand-file-name (concat user-emacs-directory "init-24.3.el")) t))
  (t
-  (load "~/.emacs.d/init-latest.el" t)))
+  (load (expand-file-name (concat user-emacs-directory "init-latest.el")) t)))
 
 ;; automatically make directory
 (add-hook 'find-file-not-found-functions

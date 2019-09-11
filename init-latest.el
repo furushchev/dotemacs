@@ -9,7 +9,7 @@
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         (format "https://raw.githubusercontent.com/%s/straight.el/develop/install.el" straight-repository-user)
          'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
@@ -211,7 +211,7 @@
   :diminish yas-minor-mode
   :config
   (setq yas-snippet-dirs
-        '(,(concat user-emacs-directory "snippets")
+        `(,(concat user-emacs-directory "snippets")
           ,(concat user-emacs-directory "el-get/yasnippet/snippets")))
   (bind-key "TAB" nil yas-keymap)
   (yas-global-mode t))
