@@ -180,7 +180,20 @@
 (use-package git-gutter+
   :diminish git-gutter+
   :config
-  (global-git-gutter+-mode))
+  (global-git-gutter+-mode)
+  ;; To fix error with tramp
+  ;; see https://github.com/nonsequitur/git-gutter-plus/issues/42
+  (defun git-gutter+-remote-default-directory (dir file)
+    (let* ((vec (tramp-dissect-file-name file))
+           (method (tramp-file-name-method vec))
+           (user (tramp-file-name-user vec))
+           (domain (tramp-file-name-domain vec))
+           (host (tramp-file-name-host vec))
+           (port (tramp-file-name-port vec)))
+      (tramp-make-tramp-file-name method user domain host port dir)))
+  (defun git-gutter+-remote-file-path (dir file)
+    (let ((file (tramp-file-name-localname (tramp-dissect-file-name file))))
+      (replace-regexp-in-string (concat "\\`" dir) "" file))))
 
 (use-package git-gutter-fringe+
   :catch (lambda (c a) t))
