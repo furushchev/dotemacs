@@ -4,10 +4,13 @@ on: [push]
 
 jobs:
   build:
-
+    name: "Test on Emacs ${{ matrix.emacs_version }}"
     runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        emacs_version: [23, 24, 25, 26, 27]
     container:
-      image: silex/emacs:27
+      image: "silex/emacs:${{ matrix.emacs_version }}"
     steps:
     - uses: actions/checkout@v2
     - name: Install dependencies
