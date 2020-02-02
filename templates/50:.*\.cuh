@@ -7,9 +7,9 @@
  */
 
 
-#ifndef `(upcase (replace-regexp-in-string "[^a-zA-Z0-9]" "_" (file-name-nondirectory (buffer-file-name))))`__
-#define `(upcase (replace-regexp-in-string "[^a-zA-Z0-9]" "_" (file-name-nondirectory (buffer-file-name))))`__
+#ifndef `(upcase (replace-regexp-in-string "[^a-zA-Z0-9]" "_" (format "%s_%s" (file-name-nondirectory (directory-file-name (file-name-directory (buffer-file-name)))) (file-name-nondirectory (buffer-file-name)))))`__
+#define `(upcase (replace-regexp-in-string "[^a-zA-Z0-9]" "_" (format "%s_%s" (file-name-nondirectory (directory-file-name (file-name-directory (buffer-file-name)))) (file-name-nondirectory (buffer-file-name)))))`__
 
 $0
 
-#endif // `(upcase (replace-regexp-in-string "[^a-zA-Z0-9]" "_" (file-name-nondirectory (buffer-file-name))))`__
+#endif // `(upcase (replace-regexp-in-string "[^a-zA-Z0-9]" "_" (format "%s_%s" (file-name-nondirectory (directory-file-name (file-name-directory (buffer-file-name)))) (file-name-nondirectory (buffer-file-name)))))`__

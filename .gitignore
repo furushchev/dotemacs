@@ -98,3 +98,5 @@ company-statistics-cache.el
 !straight/
 straight/*
 !straight/versions/
+transient
+.lsp-session-v1
