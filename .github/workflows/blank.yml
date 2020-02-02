@@ -12,11 +12,11 @@ jobs:
     container:
       image: "silex/emacs:${{ matrix.emacs_version }}"
     steps:
-    - uses: actions/checkout@v2
     - name: Install dependencies
       run: |
         apt-get update -qq
-        apt-get install -qq -y git
+        apt-get install -qq -y build-essential git
+    - uses: actions/checkout@v2
     - name: Check emacs version
       run: emacs --version
     - name: Evaluate init.el
