@@ -14,5 +14,5 @@ jobs:
       run: emacs --version
     - name: Run hogehoge
       run: |
-        cwd
+        pwd
         ls -lFah .
