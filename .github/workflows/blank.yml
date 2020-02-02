@@ -10,7 +10,13 @@ jobs:
       image: silex/emacs:27
     steps:
     - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        apt-get update -qq
+        apt-get install -qq -y git
     - name: Check emacs version
       run: emacs --version
     - name: Evaluate init.el
-      run: emacs --batch -l init.el
+      run: |
+        cp -rf . $HOME/.emacs.d
+        emacs --batch -l $HOME/.emacs.d/init.el
