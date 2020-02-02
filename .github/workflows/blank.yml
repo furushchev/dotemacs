@@ -1,0 +1,18 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: "ubuntu-latest"
+    container:
+      image: silex/emacs:27
+    steps:
+    - uses: actions/checkout@v2
+    - name: Check emacs version
+      run: emacs --version
+    - name: Run hogehoge
+      run: |
+        cwd
+        ls -lFah .
