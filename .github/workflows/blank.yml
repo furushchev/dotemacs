@@ -17,4 +17,6 @@ jobs:
     - name: Check emacs version
       run: emacs --version
     - name: Evaluate init.el
-      run: emacs --batch -l init.el
+      run: |
+        cp -rf . $HOME/.emacs.d
+        emacs --batch -l $HOME/.emacs.d/init.el
