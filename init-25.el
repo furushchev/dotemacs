@@ -1,11 +1,13 @@
 (use-package exec-path-from-shell
+  :ensure t
   :init
   (setq exec-path-from-shell-check-startup-files nil)
   :config
   (exec-path-from-shell-initialize))
 
 (use-package use-package-ensure-system-package
-  :config
+  :ensure t
+  :init
   (setq system-packages-usesudo t))
 
 (use-package diminish)
