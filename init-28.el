@@ -1,7 +1,14 @@
-;; save place
-(require 'saveplace)
-(with-eval-after-load 'saveplace
-  (save-place-mode t))
+(use-package exec-path-from-shell
+  :init
+  (setq exec-path-from-shell-check-startup-files nil)
+  :config
+  (exec-path-from-shell-initialize))
+
+(use-package use-package-ensure-system-package
+  :config
+  (setq system-packages-usesudo t))
+
+(use-package diminish)
 
 (use-package auto-compile
   :no-require t
@@ -16,7 +23,7 @@
 
 (use-package company
   :no-require t
-  :diminish "company"
+  :diminish
   :config
   (global-company-mode t)
   (bind-keys :map company-active-map
@@ -32,11 +39,6 @@
   :no-require t
   :commands company-lsp)
 
-;; (bind-key "S-TAB" 'company-select-previous company-active-map)
-;; (bind-key "M-[ z" 'company-select-previous company-active-map)
-;; (bind-key "M-d" 'company-show-doc-buffer company-active-map))
-
-
 (use-package cmake-mode
   :no-require t
   :mode ("\\.cmake\\'" "CMakeLists\\.txt\\'"))
@@ -49,6 +51,11 @@
   :no-require t
   :mode "Dockerfile\\'")
 
+(use-package eldoc
+  :straight nil
+  :config
+  :diminish)
+
 (use-package flycheck
   :no-require t
   :defer t
@@ -60,12 +67,15 @@
 
 (use-package git-gutter+
   :no-require t
-  :diminish git-gutter+
+  :diminish
   :config
   (global-git-gutter+-mode))
 
 (use-package lsp-mode
   :no-require t
+  :ensure-system-package
+  (("/usr/local/bin/pyls" . "pip install python-language-server[all]")
+   ("/usr/bin/clangd-6.0" . clang-tools-6.0))
   :commands (lsp lsp-deferred)
   :hook ((c-mode . lsp-deferred)
          (c++-mode . lsp-deferred)
@@ -99,6 +109,11 @@
         ros-node-update-interval 0)
   (invoke-rosemacs)
   (bind-key "C-x C-r" ros-keymap))
+
+(use-package saveplace
+  :straight nil
+  :config
+  (save-place-mode t))
 
 (use-package web-mode
   :no-require t
