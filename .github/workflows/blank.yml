@@ -8,7 +8,7 @@ jobs:
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
-        emacs_version: [23, 24, 25, 26, 27]
+        emacs_version: [25, 26, 27]
     container:
       image: "silex/emacs:${{ matrix.emacs_version }}"
     steps:
