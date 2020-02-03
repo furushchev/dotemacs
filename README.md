@@ -1,20 +1,13 @@
-# dotemacs [![Build Status](https://travis-ci.org/furushchev/dotemacs.svg)](https://travis-ci.org/furushchev/dotemacs)
+# dotemacs ![CI](https://github.com/furushchev/dotemacs/workflows/CI/badge.svg)
 
 **This is an Emacs Settings**
 
-### Install
-
-``` bash
-curl -sfL https://raw.github.com/furushchev/dotemacs/master/install.sh | bash
-```
-
-### Step-by-Step Install
+### How to use
 
 1. download this repository and set on appropriate directory
 
   ``` bash
 git clone https://github.com/furushchev/dotemacs.git ~/.emacs.d
-cd ~/.emacs.d && git submodule update --init
 ```
 
 2. launch `emacs`
@@ -24,17 +17,12 @@ cd ~/.emacs.d && git submodule update --init
 3. Modify your name and email address
 
   ```bash
-emacs ~/.emacs.d/init/00-settings.el
+emacs ~/.emacs.d/init-common.el
 # ;; author
 # (setq user-full-name "Yuki Furuta")  ;; change this
-# (setq user-mail-address "furushchev@jsk.imi.i.u-tokyo.ac.jp") ;; change also this
+# (setq user-mail-address "me@furushchev.ru") ;; also change this
 ```
-
-### Profiling
-
-After launching `emacs`, execute `M-x init-loader-show-log`.  
-This command shows how many time it takes to execute each startup scripts.
 
 ### Author
 
-Yuki Furuta (furushchev@mail.ru)
+Yuki Furuta (me@furushchev.ru)
