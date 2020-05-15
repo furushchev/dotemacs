@@ -14,14 +14,6 @@
   :no-require t
   :commands arduino-mode)
 
-(use-package auto-compile
-  :no-require t
-  :defer t
-  :ensure t
-  :diminish "C"
-  :init
-  (add-hook 'emacs-lisp-mode-hook 'auto-compile-mode))
-
 (use-package bind-key
   :no-require t)
 
