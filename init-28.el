@@ -10,6 +10,10 @@
 
 (use-package diminish)
 
+(use-package arduino-mode
+  :no-require t
+  :commands arduino-mode)
+
 (use-package auto-compile
   :no-require t
   :defer t
