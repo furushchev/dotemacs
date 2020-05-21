@@ -31,10 +31,6 @@
              ("C-n" . company-select-next)
              ("C-p" . company-select-previous)))
 
-(use-package company-lsp
-  :no-require t
-  :commands company-lsp)
-
 (use-package cmake-mode
   :no-require t
   :mode ("\\.cmake\\'" "CMakeLists\\.txt\\'"))
@@ -87,16 +83,26 @@
   :hook ((c-mode . lsp-deferred)
          (c++-mode . lsp-deferred)
          (js-mode . lsp-deferred)
-         (python-mode . lsp-deferred))
+         (python-mode . lsp-deferred)
+         (lsp-mode . lsp-enable-which-key-integration))
   :init
   (setq lsp-keymap-prefix "C-c l")
   :config
+  ;; (setq lsp-log-io nil
+  ;;       lsp-enable-folding nil
+  ;;       lsp-diagnostic-package :none
+  ;;       lsp-enable-snippet nil
+  ;;       lsp-enable-symbol-highlighting nil
+  ;;       lsp-enable-links nil
+  ;;       lsp-prefer-flymake nil
+  ;;       lsp-restart 'auto-restart
+  ;;       )
   (setq lsp-clients-clangd-executable "clangd-6.0")
-  (setq lsp-prefer-flymake nil))
-
-;; (use-package lsp-ui
-;;   :no-require t
-;;   :commands lsp-ui-mode)
+  (setq lsp-pyls-plugins-pylint-enabled nil
+        lsp-pyls-plugins-pycodestyle-enabled nil
+        lsp-pyls-plugins-pyflakes-enabled nil
+        lsp-pyls-plugins-autopep8-enabled nil
+        lsp-pyls-plugins-yapf-enabled t))
 
 (use-package magit
   :no-require t
@@ -133,6 +139,10 @@
   (setq-default web-mode-markup-indent-offset 2
                 web-mode-css-indent-offset 2
                 web-mode-code-indent-offset 2))
+
+(use-package which-key
+  :config
+  (which-key-mode))
 
 (use-package yaml-mode
   :no-require t

@@ -13,9 +13,9 @@
 ;; expand gc threshold at start time
 (defconst initial-gc-cons-threshold gc-cons-threshold
   "initial value of gc-conc-threshold at start-up time")
-(setq gc-cons-threshold (* 100 gc-cons-threshold))
-(add-hook 'after-init-hook
-          (lambda () (setq gc-cons-threshold (* 10 initial-gc-cons-threshold))))
+(setq gc-cons-threshold (* 50 gc-cons-threshold))
+;; (add-hook 'after-init-hook
+;;           (lambda () (setq gc-cons-threshold (* 10 initial-gc-cons-threshold))))
 
 ;; delay calculate line number
 (setq linum-delay t)
