@@ -85,6 +85,7 @@
          (python-mode . lsp-deferred))
   :init
   (setq lsp-keymap-prefix "C-c l")
+  (defun file-local-name (file) (or (file-remote-p file 'localname) file))
   :config
   (setq lsp-clients-clangd-executable "clangd-6.0")
   (setq lsp-prefer-flymake nil))
