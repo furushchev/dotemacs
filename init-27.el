@@ -10,6 +10,8 @@
 
 (use-package diminish)
 
+(use-package ag)
+
 (use-package auto-compile
   :no-require t
   :defer t
