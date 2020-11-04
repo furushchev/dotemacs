@@ -77,7 +77,7 @@
   :no-require t
   :ensure-system-package
   (("/usr/local/bin/pyls" . "pip install python-language-server[all]")
-   ("/usr/bin/clangd-6.0" . clang-tools-6.0))
+   ("/usr/bin/clangd-10" . clang-tools-10))
   :commands (lsp lsp-deferred)
   :hook ((c-mode . lsp-deferred)
          (c++-mode . lsp-deferred)
@@ -86,7 +86,7 @@
   :init
   (setq lsp-keymap-prefix "C-c l")
   :config
-  (setq lsp-clients-clangd-executable "clangd-6.0")
+  (setq lsp-clients-clangd-executable "clangd-10")
   (setq lsp-prefer-flymake nil))
 
 ;; (use-package lsp-ui
