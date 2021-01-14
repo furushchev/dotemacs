@@ -407,14 +407,6 @@
   :emacs>= 25.1
   :ensure t)
 
-(leaf python-mode
-  :doc "Python major mode"
-  :tag "oop" "python" "processes" "languages"
-  :added "2021-01-04"
-  :url "https://gitlab.com/groups/python-mode-devs"
-  :ensure t
-  :custom '(python-indent-offset . 4))
-
 (setq-default ros-distro (format "/opt/ros/%s/share/emacs/site-lisp/"
                                  (or (getenv "ROS_DISTRO") "melodic")))
 (leaf rosemacs
