@@ -44,7 +44,9 @@
   :tag "builtin"
   :custom `((user-full-name . "Yuki Furuta")
             (user-login-name . "furushchev")
-            (user-mail-address . "me@furushchev.ru")))
+            (user-mail-address . "me@furushchev.ru"))
+  :config
+  (defun user-mail-address () user-mail-address))
 
 (leaf custom-edit
   :doc "Custom variables for editing"
@@ -454,3 +456,16 @@
   :ensure t
   :bind ("<tab>" . yas-keymap)
   :global-minor-mode yas-global-mode)
+
+(leaf yatemplate
+  :doc "File templates with yasnippet"
+  :req "yasnippet-0.8.1" "emacs-24.3"
+  :tag "convenience" "files" "emacs>=24.3"
+  :added "2021-01-12"
+  :url "https://github.com/mineo/yatemplate"
+  :emacs>= 24.3
+  :ensure t
+  :after yasnippet
+  :config
+  (yatemplate-fill-alist)
+  (auto-insert-mode 1))
