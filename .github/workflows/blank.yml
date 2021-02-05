@@ -1,7 +1,5 @@
 name: CI
 
-on: [push]
-
 jobs:
   build:
     name: "Test on Emacs ${{ matrix.emacs_version }}"
@@ -23,3 +21,17 @@ jobs:
       run: |
         cp -rf . $HOME/.emacs.d
         emacs --batch -l $HOME/.emacs.d/init.el
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  release:
+    types:
+      - created
+  schedule:
+    # daily
+    - cron: '0 0 * * *'
