@@ -157,18 +157,21 @@
   :doc "user customization variables for CC Mode"
   :tag "builtin"
   :added "2021-01-04"
-  :custom `((c-basic-offset . ,tab-width))
+  :defvar (c-basic-offset)
+  :mode ("\\.cc?$" "\\.cxx$" "\\.hh?$" "\\.hpp$" "\\.cpp$")
   :mode-hook
-  (c-set-style "linux")
-  (c-set-offset 'inline-open 0)
-  (c-set-offset 'inline-close 0)
-  (c-set-offset 'member-init-intro 0)
-  (c-set-offset 'innamespace 0)
-  (c-set-offset 'arglist-intro 4))
+  (c-mode-common-hook . ((c-set-style "linux")
+                         (setq c-basic-offset tab-width)
+                         (c-set-offset 'inline-open 0)
+                         (c-set-offset 'inline-close 0)
+                         (c-set-offset 'member-init-intro 0)
+                         (c-set-offset 'innamespace 0)
+                         (c-set-offset 'arglist-intro '++))))
 
 (leaf sh-mode
   :doc "Shell mode properties"
   :tag "builtin"
+  :mode ("\\.sh$" "\\.bash$" "\\.zsh$")
   :custom `((sh-basic-offset . ,tab-width)
             (sh-indentation . ,tab-width)))
 
@@ -194,6 +197,7 @@
   :emacs>= 25.1
   :ensure t
   :after spinner
+  :mode ("\\.ino$")
   :commands arduino-mode)
 
 (leaf ccls
@@ -256,12 +260,14 @@
   :tag "emacs>=24.1"
   :added "2021-01-04"
   :emacs>= 24.1
+  :mode ("\\.cmake" "\\.CMakeLists.txt$")
   :ensure t)
 
 (leaf cuda-mode
   :doc "NVIDIA CUDA Major Mode"
   :tag "languages" "c"
   :added "2021-01-04"
+  :mode ("\\.cuh?$")
   :ensure t)
 
 (leaf dockerfile-mode
@@ -271,6 +277,7 @@
   :added "2021-01-04"
   :url "https://github.com/spotify/dockerfile-mode"
   :emacs>= 24
+  :mode ("\\.Dockerfile$")
   :ensure t)
 
 (leaf dumb-jump
@@ -407,6 +414,7 @@
   :added "2021-01-04"
   :url "https://jblevins.org/projects/markdown-mode/"
   :emacs>= 25.1
+  :mode ("\\.md$" "\\.markdown$")
   :ensure t)
 
 (setq-default ros-distro (format "/opt/ros/%s/share/emacs/site-lisp/"
