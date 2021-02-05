@@ -10,6 +10,8 @@
                        ("melpa" . "https://melpa.org/packages/")
                        ("gnu" . "https://elpa.gnu.org/packages/")))
   (package-initialize)
+  (when (< emacs-major-version 26)
+    (setq package-check-signature nil))
   (unless (package-installed-p 'leaf)
     (package-refresh-contents)
     (package-install 'leaf))
@@ -19,13 +21,13 @@
     :init
     :config
     (leaf-keywords-init)
-    (leaf blackout :ensure t)
+    (leaf blackout :emacs>= 26 :ensure t)
     (leaf el-get :ensure t)))
 
 (leaf leaf
   :doc "Install leaf-convert after leaf is enabled"
   :config
-  (leaf leaf-convert :ensure t))
+  (leaf leaf-convert :emacs>= 26 :ensure t))
 
 ;; Setup variables
 (leaf custom-keybinding
@@ -53,6 +55,7 @@
   :tag "builtin"
   :custom `((custom-file . ,(locate-user-emacs-file "custom.el"))
             (debug-on-error . t)
+            (display-warning-minimum-level . :error)
             (enable-local-variables . :safe)
             (enable-recursive-minibuffers . t)
             (frame-resize-pixelwise . t)
@@ -157,18 +160,21 @@
   :doc "user customization variables for CC Mode"
   :tag "builtin"
   :added "2021-01-04"
-  :custom `((c-basic-offset . ,tab-width))
+  :defvar (c-basic-offset)
+  :mode ("\\.cc?$" "\\.cxx$" "\\.hh?$" "\\.hpp$" "\\.cpp$")
   :mode-hook
-  (c-set-style "linux")
-  (c-set-offset 'inline-open 0)
-  (c-set-offset 'inline-close 0)
-  (c-set-offset 'member-init-intro 0)
-  (c-set-offset 'innamespace 0)
-  (c-set-offset 'arglist-intro 4))
+  (c-mode-common-hook . ((c-set-style "linux")
+                         (setq c-basic-offset tab-width)
+                         (c-set-offset 'inline-open 0)
+                         (c-set-offset 'inline-close 0)
+                         (c-set-offset 'member-init-intro 0)
+                         (c-set-offset 'innamespace 0)
+                         (c-set-offset 'arglist-intro '++))))
 
 (leaf sh-mode
   :doc "Shell mode properties"
   :tag "builtin"
+  :mode ("\\.sh$" "\\.bash$" "\\.zsh$")
   :custom `((sh-basic-offset . ,tab-width)
             (sh-indentation . ,tab-width)))
 
@@ -194,15 +200,16 @@
   :emacs>= 25.1
   :ensure t
   :after spinner
+  :mode ("\\.ino$")
   :commands arduino-mode)
 
 (leaf ccls
   :doc "ccls client for lsp-mode"
-  :req "emacs-25.1" "lsp-mode-6.3.1" "dash-2.14.1"
-  :tag "c++" "lsp" "languages" "emacs>=25.1"
+  :req "emacs-26.1" "lsp-mode-6.3.1" "dash-2.14.1"
+  :tag "c++" "lsp" "languages" "emacs>=26.1"
   :added "2021-01-04"
   :url "https://github.com/MaskRay/emacs-ccls"
-  :emacs>= 25.1
+  :emacs>= 26.1
   :ensure t
   :after lsp-mode
   :custom '((ccls-executable . "/snap/bin/ccls")
@@ -256,12 +263,14 @@
   :tag "emacs>=24.1"
   :added "2021-01-04"
   :emacs>= 24.1
+  :mode ("\\.cmake" "\\.CMakeLists.txt$")
   :ensure t)
 
 (leaf cuda-mode
   :doc "NVIDIA CUDA Major Mode"
   :tag "languages" "c"
   :added "2021-01-04"
+  :mode ("\\.cuh?$")
   :ensure t)
 
 (leaf dockerfile-mode
@@ -271,6 +280,7 @@
   :added "2021-01-04"
   :url "https://github.com/spotify/dockerfile-mode"
   :emacs>= 24
+  :mode ("\\.Dockerfile$")
   :ensure t)
 
 (leaf dumb-jump
@@ -378,22 +388,22 @@
 
 (leaf lsp-ivy
   :doc "LSP ivy integration"
-  :req "emacs-25.1" "dash-2.14.1" "lsp-mode-6.2.1" "ivy-0.13.0"
-  :tag "debug" "languages" "emacs>=25.1"
+  :req "emacs-26.1" "dash-2.14.1" "lsp-mode-6.2.1" "ivy-0.13.0"
+  :tag "debug" "languages" "emacs>=26.1"
   :added "2021-01-04"
   :url "https://github.com/emacs-lsp/lsp-ivy"
-  :emacs>= 25.1
+  :emacs>= 26.1
   :ensure t
   :after lsp-mode ivy
   :commands lsp-ivy-workspace-symbol)
 
 (leaf lsp-python-ms
   :doc "The lsp-mode client for Microsoft python-language-server"
-  :req "emacs-25.1" "lsp-mode-6.1"
-  :tag "tools" "languages" "emacs>=25.1"
+  :req "emacs-26.1" "lsp-mode-6.1"
+  :tag "tools" "languages" "emacs>=26.1"
   :added "2021-01-04"
   :url "https://github.com/emacs-lsp/lsp-python-ms"
-  :emacs>= 25.1
+  :emacs>= 26.1
   :ensure t
   :after lsp-mode
   :init
@@ -407,6 +417,7 @@
   :added "2021-01-04"
   :url "https://jblevins.org/projects/markdown-mode/"
   :emacs>= 25.1
+  :mode ("\\.md$" "\\.markdown$")
   :ensure t)
 
 (setq-default ros-distro (format "/opt/ros/%s/share/emacs/site-lisp/"
