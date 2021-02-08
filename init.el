@@ -161,7 +161,8 @@
   :tag "builtin"
   :added "2021-01-04"
   :defvar (c-basic-offset)
-  :mode ("\\.cc?$" "\\.cxx$" "\\.hh?$" "\\.hpp$" "\\.cpp$")
+  :mode ((("\\.c$" "\\.h$") . c-mode)
+         (("\\.cc$" "\\.hh$" "\\.cxx$" "\\.hxx$" "\\.cpp$" "\\.hpp$") . c++-mode))
   :mode-hook
   (c-mode-common-hook . ((c-set-style "linux")
                          (setq c-basic-offset tab-width)
