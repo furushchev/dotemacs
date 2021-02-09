@@ -432,6 +432,8 @@
   :require t
   :custom `((ros-topic-update-interval . 0)
             (ros-node-update-interval . 0))
+  :init
+  (defalias 'dynamic-completion-table 'completion-table-dynamic)
   :config
   (invoke-rosemacs)
   (global-set-key "\C-x\C-r" ros-keymap))
