@@ -426,6 +426,8 @@
   (defun magit-open-github-pull-request-url ()
     "Open Github Create Pull-Request page on web browser"
     (interactive)
+    (unless (magit-get-push-remote)
+      (error "Push to remote first!"))
     (browse-url (format "https://github.com/%s/pull/new/%s"
                         (replace-regexp-in-string
                          "\\`.+github\\.com:\\(.+\\)\\.git\\'" "\\1"
