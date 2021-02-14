@@ -411,6 +411,30 @@
   (setq-default lsp-python-ms-auto-install-server t)
   :hook (python-mode . lsp))
 
+(leaf magit
+  :doc "A Git porcelain inside Emacs."
+  :req "emacs-25.1" "dash-20200524" "git-commit-20200516" "transient-20200601" "with-editor-20200522"
+  :tag "vc" "tools" "git" "emacs>=25.1"
+  :added "2021-02-14"
+  :url "https://github.com/magit/magit"
+  :emacs>= 25.1
+  :ensure t
+  :after git-commit with-editor
+  :bind (("C-x g" . magit-status))
+  :defvar magit-mode-map
+  :config
+  (defun magit-open-github-pull-request-url ()
+    "Open Github Create Pull-Request page on web browser"
+    (interactive)
+    (browse-url (format "https://github.com/%s/pull/new/%s"
+                        (replace-regexp-in-string
+                         "\\`.+github\\.com:\\(.+\\)\\.git\\'" "\\1"
+                         (magit-get "remote"
+                                    (magit-get-push-remote)
+                                    "url"))
+                        (magit-get-current-branch))))
+  (define-key magit-mode-map "c" #'magit-open-github-pull-request-url))
+
 (leaf markdown-mode
   :doc "Major mode for Markdown-formatted text"
   :req "emacs-25.1"
