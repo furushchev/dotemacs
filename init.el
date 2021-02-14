@@ -433,7 +433,7 @@
                                     (magit-get-push-remote)
                                     "url"))
                         (magit-get-current-branch))))
-  (define-key magit-mode-map "c" #'magit-open-github-pull-request-url))
+  (define-key magit-mode-map "G" #'magit-open-github-pull-request-url))
 
 (leaf markdown-mode
   :doc "Major mode for Markdown-formatted text"
