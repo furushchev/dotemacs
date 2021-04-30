@@ -11,7 +11,9 @@
                        ("gnu" . "https://elpa.gnu.org/packages/")))
   (package-initialize)
   (when (< emacs-major-version 26)
-    (setq package-check-signature nil))
+    (setq package-check-signature nil)
+    ;; dummy function for blackout error
+    (defun blackout (&rest args) t))
   (unless (package-installed-p 'leaf)
     (package-refresh-contents)
     (package-install 'leaf))
