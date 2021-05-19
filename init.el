@@ -87,6 +87,7 @@
   :tag "builtin"
   :custom `((bidi-display-reordering . nil)
             (column-number-mode . t)
+            (frame-background-mode . 'dark)
             (inhibit-startup-screen . t)
             (inhibit-startup-message . t)
             (initial-scratch-messaage . nil)
