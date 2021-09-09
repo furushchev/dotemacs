@@ -67,6 +67,7 @@
             (indent-tabs-mode . nil)
             (init-file-debug . t)
             (locale-coding-system . 'utf-8)
+            (read-process-output-max . ,(* 1024 1024))
             (require-final-newline . t)
             (tab-width . 2)
             (truncate-lines . t))
