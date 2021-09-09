@@ -106,6 +106,13 @@
   (defadvice linum-schedule (around my-linum-sched () activate)
     (run-with-idle-timer 0.2 nil #'linum-update-current)))
 
+(leaf custom-window-system
+  :doc "Custom variables on window system"
+  :tag "builtin"
+  :when window-system
+  :config
+  (load-theme 'tango-dark t nil))
+
 (leaf backup
   :doc "Backup files"
   :tag "builtin"
@@ -344,6 +351,7 @@
   :ensure t
   :leaf-defer nil
   :custom ((ivy-initial-inputs-alist . nil)
+           (ivy-use-virtual-buffers . t)
            (ivy-use-selectable-prompt . t))
   :global-minor-mode t
   :config
@@ -389,7 +397,9 @@
             (lsp-message-project-root-warning . t)
             (lsp-file-watch-threshold . nil)
             (lsp-idle-delay . 0.5))
-  :hook (prog-major-mode-hook . lsp-prog-major-mode-enable))
+  :hook ((prog-major-mode-hook . lsp-prog-major-mode-enable)
+         (c-mode-common-hook . lsp-deferred)
+         (python-mode-hook . lsp-deferred)))
 
 (leaf lsp-ivy
   :doc "LSP ivy integration"
