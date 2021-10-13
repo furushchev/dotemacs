@@ -67,7 +67,7 @@
             (indent-tabs-mode . nil)
             (init-file-debug . t)
             (locale-coding-system . 'utf-8)
-            (read-process-output-max . ,(* 1024 1024))
+            (read-process-output-max . ,(* 4 1024 1024))
             (require-final-newline . t)
             (tab-width . 2)
             (truncate-lines . t))
@@ -388,15 +388,23 @@
   :ensure t
   :after spinner markdown-mode lv
   :commands lsp
-  :custom `((lsp-enable-snippet . t)
+  :custom `((lsp-auto-configure . t)
+            (lsp-eldoc-enable-hover . t)
+            (lsp-eldoc-render-all . t)
+            (lsp-enable-completion-at-point . t)
+            (lsp-enable-snippet . t)
             (lsp-enable-indentation . nil)
-            (lsp-prefer-capf . t)
-            (lsp-prefer-flymake . nil)
+            (lsp-enable-xref . t)
             (lsp-document-sync-method . 'incremental)
+            (lsp-file-watch-ignored . '("[/\\\\]\\.venv$"
+                                        "[/\\\\]\\.mypy_cache$"
+                                        "[/\\\\]__pycache__$"))
+            (lsp-file-watch-threshold . nil)
+            (lsp-idle-delay . 0.5)
             (lsp-inhibit-message . t)
             (lsp-message-project-root-warning . t)
-            (lsp-file-watch-threshold . nil)
-            (lsp-idle-delay . 0.5))
+            (lsp-prefer-capf . t)
+            (lsp-prefer-flymake . nil))
   :hook ((prog-major-mode-hook . lsp-prog-major-mode-enable)
          (c-mode-common-hook . lsp-deferred)
          (python-mode-hook . lsp-deferred)))
@@ -412,18 +420,28 @@
   :after lsp-mode ivy
   :commands lsp-ivy-workspace-symbol)
 
-(leaf lsp-python-ms
-  :doc "The lsp-mode client for Microsoft python-language-server"
-  :req "emacs-26.1" "lsp-mode-6.1"
-  :tag "tools" "languages" "emacs>=26.1"
-  :added "2021-01-04"
-  :url "https://github.com/emacs-lsp/lsp-python-ms"
+(leaf lsp-pyright
+  :doc "Python LSP client using Pyright"
+  :req "emacs-26.1" "lsp-mode-7.0" "dash-2.18.0" "ht-2.0"
+  :tag "lsp" "tools" "languages" "emacs>=26.1"
+  :url "https://github.com/emacs-lsp/lsp-pyright"
+  :added "2021-10-12"
   :emacs>= 26.1
   :ensure t
-  :after lsp-mode
-  :init
-  (setq-default lsp-python-ms-auto-install-server t)
-  :hook (python-mode . lsp))
+  ;; :after lsp-mode
+  :hook (python-mode-hook . (lambda () (require 'lsp-pyright) (lsp-deferred)))
+  :config
+  (unless (executable-find "pyright")
+    (unless (executable-find "npm")
+      (lsp--error "Both pyright and npm are not installed"))
+    (lsp--info "Installing pyright...")
+    (lsp-async-start-process
+     (lambda ()
+       (when (executable-find "pyright")
+         (lsp--info "Installing pyright...done")
+         (and lsp-mode (lsp))))
+     #'lsp--error
+     "npm install -g pyright")))
 
 (leaf magit
   :doc "A Git porcelain inside Emacs."
