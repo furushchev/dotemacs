@@ -174,14 +174,22 @@
   :defvar (c-basic-offset)
   :mode ((("\\.c$" "\\.h$") . c-mode)
          (("\\.cc$" "\\.hh$" "\\.cxx$" "\\.hxx$" "\\.cpp$" "\\.hpp$") . c++-mode))
-  :mode-hook
-  (c-mode-common-hook . ((c-set-style "linux")
-                         (setq c-basic-offset tab-width)
-                         (c-set-offset 'inline-open 0)
-                         (c-set-offset 'inline-close 0)
-                         (c-set-offset 'member-init-intro 0)
-                         (c-set-offset 'innamespace 0)
-                         (c-set-offset 'arglist-intro '++))))
+  :hook
+  (c-mode-common-hook . (lambda () (c-set-style "linux")
+                          (setq c-basic-offset tab-width)
+                          (c-set-offset 'inline-open 0)
+                          (c-set-offset 'inline-close 0)
+                          (c-set-offset 'member-init-intro 0)
+                          (c-set-offset 'innamespace 0)
+                          (c-set-offset 'arglist-intro '++))))
+
+(leaf python-mode
+  :doc "Python major mode"
+  :tag "oop" "python" "processes" "languages"
+  :url "https://gitlab.com/groups/python-mode-devs"
+  :added "2022-04-29"
+  :ensure t
+  :mode ("\\.py$"))
 
 (leaf sh-mode
   :doc "Shell mode properties"
@@ -214,20 +222,6 @@
   :after spinner
   :mode ("\\.ino$")
   :commands arduino-mode)
-
-(leaf ccls
-  :doc "ccls client for lsp-mode"
-  :req "emacs-26.1" "lsp-mode-6.3.1" "dash-2.14.1"
-  :tag "c++" "lsp" "languages" "emacs>=26.1"
-  :added "2021-01-04"
-  :url "https://github.com/MaskRay/emacs-ccls"
-  :emacs>= 26.1
-  :ensure t
-  :after lsp-mode
-  :custom '((ccls-executable . "/snap/bin/ccls")
-            (ccls-sem-highlight-method 'font-lock)
-            (ccls-use-default-rainbow-sem-highlight))
-  :hook '((c-mode-hook c++-mode-hook objc-mode-hook) lsp))
 
 (leaf company
   :doc "Modular text completion framework"
@@ -309,6 +303,19 @@
   :custom '((dumb-jump-selector . 'ivy)
             (dumb-jump-use-visible-window . nil)))
 
+(leaf eglot
+  :doc "Client for Language Server Protocol (LSP) servers"
+  :req "emacs-26.1" "jsonrpc-1.0.14" "flymake-1.0.9" "project-0.3.0" "xref-1.0.1" "eldoc-1.11.0"
+  :tag "languages" "convenience" "emacs>=26.1"
+  :url "https://github.com/joaotavora/eglot"
+  :added "2022-04-29"
+  :emacs>= 26.1
+  :ensure t
+  :after eldoc xref project ;; jsonrpc flymake
+  :hook
+  ((python-mode . eglot-ensure)
+   (c-mode-common-hook . eglot-ensure)))
+
 (leaf exec-path-from-shell
   :doc "Get environment variables such as $PATH from the shell"
   :req "emacs-24.1" "cl-lib-0.6"
@@ -378,71 +385,6 @@
     :custom `((counsel-yank-pop-separator . "\n----------\n")
               (counsel-find-file-ignore-regexp . ,(rx-to-string '(or "./" "../") 'no-group)))
     :global-minor-mode t))
-
-(leaf lsp-mode
-  :doc "LSP mode"
-  :req "emacs-26.1" "dash-2.14.1" "dash-functional-2.14.1" "f-0.20.0" "ht-2.0" "spinner-1.7.3" "markdown-mode-2.3" "lv-0"
-  :tag "languages" "emacs>=26.1"
-  :added "2021-01-04"
-  :url "https://github.com/emacs-lsp/lsp-mode"
-  :emacs>= 26.1
-  :ensure t
-  :after spinner markdown-mode lv
-  :commands lsp
-  :custom `((lsp-auto-configure . t)
-            (lsp-eldoc-enable-hover . t)
-            (lsp-eldoc-render-all . t)
-            (lsp-enable-completion-at-point . t)
-            (lsp-enable-snippet . t)
-            (lsp-enable-indentation . nil)
-            (lsp-enable-xref . t)
-            (lsp-document-sync-method . 'incremental)
-            (lsp-file-watch-ignored . '("[/\\\\]\\.venv$"
-                                        "[/\\\\]\\.mypy_cache$"
-                                        "[/\\\\]__pycache__$"))
-            (lsp-file-watch-threshold . nil)
-            (lsp-idle-delay . 0.5)
-            (lsp-inhibit-message . t)
-            (lsp-message-project-root-warning . t)
-            (lsp-prefer-capf . t)
-            (lsp-prefer-flymake . nil))
-  :hook ((prog-major-mode-hook . lsp-prog-major-mode-enable)
-         (c-mode-common-hook . lsp-deferred)
-         (python-mode-hook . lsp-deferred)))
-
-(leaf lsp-ivy
-  :doc "LSP ivy integration"
-  :req "emacs-26.1" "dash-2.14.1" "lsp-mode-6.2.1" "ivy-0.13.0"
-  :tag "debug" "languages" "emacs>=26.1"
-  :added "2021-01-04"
-  :url "https://github.com/emacs-lsp/lsp-ivy"
-  :emacs>= 26.1
-  :ensure t
-  :after lsp-mode ivy
-  :commands lsp-ivy-workspace-symbol)
-
-(leaf lsp-pyright
-  :doc "Python LSP client using Pyright"
-  :req "emacs-26.1" "lsp-mode-7.0" "dash-2.18.0" "ht-2.0"
-  :tag "lsp" "tools" "languages" "emacs>=26.1"
-  :url "https://github.com/emacs-lsp/lsp-pyright"
-  :added "2021-10-12"
-  :emacs>= 26.1
-  :ensure t
-  ;; :after lsp-mode
-  :hook (python-mode-hook . (lambda () (require 'lsp-pyright) (lsp-deferred)))
-  :config
-  (unless (executable-find "pyright")
-    (unless (executable-find "npm")
-      (lsp--error "Both pyright and npm are not installed"))
-    (lsp--info "Installing pyright...")
-    (lsp-async-start-process
-     (lambda ()
-       (when (executable-find "pyright")
-         (lsp--info "Installing pyright...done")
-         (and lsp-mode (lsp))))
-     #'lsp--error
-     "npm install -g pyright")))
 
 (leaf magit
   :doc "A Git porcelain inside Emacs."
