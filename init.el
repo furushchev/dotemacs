@@ -329,7 +329,8 @@
   :bind (("M-n" . flycheck-next-error)
          ("M-p" . flycheck-previous-error))
   :global-minor-mode global-flycheck-mode
-  :custom '((flycheck-gcc-language-standard . "c++17")))
+  :custom '((flycheck-check-syntax-automatically . '(mode-enabled save idle-change))
+            (flycheck-gcc-language-standard . "c++17")))
 
 (leaf git-gutter+
   :doc "Manage Git hunks straight from the buffer"
