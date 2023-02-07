@@ -48,7 +48,7 @@
   :tag "builtin"
   :custom `((user-full-name . "Yuki Furuta")
             (user-login-name . "furushchev")
-            (user-mail-address . "me@furushchev.ru"))
+            (user-mail-address . "y.furuta@gitai.tech"))
   :config
   (defun user-mail-address () user-mail-address))
 
