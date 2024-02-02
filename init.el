@@ -447,7 +447,7 @@
   :url "https://web-mode.org"
   :emacs>= 23.1
   :ensure t
-  :mode ("\\.p?html$" "\\.php$" "\\.xml$" "\\.jsx?$" "\\.ejs$")
+  :mode ("\\.p?html$" "\\.php$" "\\.xml$" "\\.jsx?$" "\\.ejs$" "\\.json$")
   :custom `((web-mode-markup-indent-offset . ,tab-width)
             (web-mode-css-indent-offset . ,tab-width)
             (web-mode-code-indent-offset . ,tab-width)))
