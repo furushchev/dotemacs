@@ -1,6 +1,6 @@
 ;; .emacs.d/init.el
 ;;
-;; Author: Yuki Furuta <me@furushchev.ru>
+;; Author: Yuki Furuta <me@furushchev.jp>
 ;;
 
 ;; Setup leaf.el
@@ -304,17 +304,31 @@
             (dumb-jump-use-visible-window . nil)))
 
 (leaf eglot
-  :doc "Client for Language Server Protocol (LSP) servers"
-  :req "emacs-26.1" "jsonrpc-1.0.14" "flymake-1.0.9" "project-0.3.0" "xref-1.0.1" "eldoc-1.11.0"
-  :tag "languages" "convenience" "emacs>=26.1"
+  :doc "The Emacs Client for LSP servers"
+  :req "emacs-26.3" "jsonrpc-1.0.16" "flymake-1.2.1" "project-0.9.8" "xref-1.6.2" "eldoc-1.11.0" "seq-2.23" "external-completion-0.1"
+  :tag "languages" "convenience" "emacs>=26.3"
   :url "https://github.com/joaotavora/eglot"
-  :added "2022-04-29"
-  :emacs>= 26.1
+  :added "2024-02-22"
+  :emacs>= 26.3
   :ensure t
-  :after eldoc xref project ;; jsonrpc flymake
-  :hook
-  ((python-mode . eglot-ensure)
-   (c-mode-common-hook . eglot-ensure)))
+  :after jsonrpc flymake project xref eldoc external-completion
+  :config
+  (add-to-list 'eglot-server-programs
+               `(python-mode . ,(eglot-alternatives
+                                 '("pylsp"
+                                   "jedi-language-server"
+                                   ("pyright-langserver" "--stdio")))))
+  (add-to-list 'eglot-server-programs
+               `((c++-mode c-mode) . ,(eglot-alternatives
+                                       '("clangd"
+                                         "clangd-10"
+                                         "clangd-9"
+                                         "clangd-8"
+                                         "clangd-7"))))
+  :hook ((python-mode . eglot-ensure)
+         (c++-mode . eglot-ensure)
+         (c-mode . eglot-ensure))
+)
 
 (leaf exec-path-from-shell
   :doc "Get environment variables such as $PATH from the shell"
@@ -348,6 +362,15 @@
   :ensure t
   :after git-commit
   :global-minor-mode global-git-gutter+-mode)
+
+(leaf go-mode
+  :doc "Major mode for the Go programming language"
+  :req "emacs-26.1"
+  :tag "go" "languages" "emacs>=26.1"
+  :url "https://github.com/dominikh/go-mode.el"
+  :added "2023-04-04"
+  :emacs>= 26.1
+  :ensure t)
 
 (leaf ivy
   :doc "Incremental Vertical completYon"
@@ -414,13 +437,14 @@
 
 (leaf markdown-mode
   :doc "Major mode for Markdown-formatted text"
-  :req "emacs-25.1"
-  :tag "itex" "github flavored markdown" "markdown" "emacs>=25.1"
-  :added "2021-01-04"
+  :req "emacs-27.1"
+  :tag "itex" "github flavored markdown" "markdown" "emacs>=27.1"
   :url "https://jblevins.org/projects/markdown-mode/"
-  :emacs>= 25.1
+  :added "2024-02-22"
+  :emacs>= 27.1
+  :ensure t
   :mode ("\\.md$" "\\.markdown$")
-  :ensure t)
+)
 
 (setq-default ros-distro (format "/opt/ros/%s/share/emacs/site-lisp/"
                                  (or (getenv "ROS_DISTRO") "melodic")))
