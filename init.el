@@ -250,19 +250,6 @@
            (company-transformers . '(company-sort-by-occurrence)))
   :global-minor-mode global-company-mode)
 
-(leaf company-c-headers
-  :disabled t
-  :doc "Company mode backend for C/C++ header files"
-  :req "emacs-24.1" "company-0.8"
-  :tag "company" "development" "emacs>=24.1"
-  :added "2020-03-25"
-  :emacs>= 24.1
-  :ensure t
-  :after company
-  :defvar company-backends
-  :config
-  (add-to-list 'company-backends 'company-c-headers))
-
 (leaf cmake-mode
   :doc "major-mode for editing CMake sources"
   :req "emacs-24.1"
@@ -288,20 +275,6 @@
   :emacs>= 24
   :mode ("\\.Dockerfile$")
   :ensure t)
-
-(leaf dumb-jump
-  :doc "Jump to definition for 40+ languages without configuration"
-  :req "emacs-24.3" "s-1.11.0" "dash-2.9.0" "popup-0.5.3"
-  :tag "programming" "emacs>=24.3"
-  :added "2021-01-04"
-  :url "https://github.com/jacktasia/dumb-jump"
-  :emacs>= 24.3
-  :ensure t
-  :global-minor-mode dumb-jump-mode
-  :bind (("M-d" . dumb-jump-go)
-         ("M-S-d" . dumb-jump-back))
-  :custom '((dumb-jump-selector . 'ivy)
-            (dumb-jump-use-visible-window . nil)))
 
 (leaf eglot
   :doc "The Emacs Client for LSP servers"
@@ -352,16 +325,6 @@
   :global-minor-mode global-flycheck-mode
   :custom '((flycheck-check-syntax-automatically . '(mode-enabled save idle-change))
             (flycheck-gcc-language-standard . "c++17")))
-
-(leaf git-gutter+
-  :doc "Manage Git hunks straight from the buffer"
-  :req "git-commit-0" "dash-0"
-  :tag "vc" "git"
-  :added "2021-01-04"
-  :url "https://github.com/nonsequitur/git-gutter-plus"
-  :ensure t
-  :after git-commit
-  :global-minor-mode global-git-gutter+-mode)
 
 (leaf go-mode
   :doc "Major mode for the Go programming language"
@@ -484,7 +447,6 @@
   :emacs>= 24.1
   :ensure t
   :mode "\\.ya?ml$")
-
 
 (leaf yasnippet
   :doc "Yet another snippet extension for Emacs"
