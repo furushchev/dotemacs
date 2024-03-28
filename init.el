@@ -231,9 +231,7 @@
   :emacs>= 24.3
   :blackout t
   :ensure t
-  :leaf-defer nil
-  :bind (("<C-tab>" . company-complete)
-         (company-active-map
+  :bind ((company-active-map
           ("M-n" . nil)
           ("M-p" . nil)
           ("C-s" . company-filter-candidates)
@@ -266,6 +264,18 @@
   :mode ("\\.cuh?$")
   :ensure t)
 
+(leaf diff-hl
+  :doc "Highlight uncommitted changes using VC"
+  :req "cl-lib-0.2" "emacs-25.1"
+  :tag "diff" "vc" "emacs>=25.1"
+  :url "https://github.com/dgutov/diff-hl"
+  :added "2024-03-27"
+  :emacs>= 25.1
+  :ensure t
+  :config
+  (global-diff-hl-mode)
+  (diff-hl-margin-mode))
+
 (leaf dockerfile-mode
   :doc "Major mode for editing Docker's Dockerfiles"
   :req "emacs-24"
@@ -284,7 +294,6 @@
   :added "2024-02-22"
   :emacs>= 26.3
   :ensure t
-  :after jsonrpc flymake project xref eldoc external-completion
   :config
   (add-to-list 'eglot-server-programs
                `(python-mode . ,(eglot-alternatives
@@ -298,9 +307,8 @@
                                          "clangd-9"
                                          "clangd-8"
                                          "clangd-7"))))
-  :hook ((python-mode . eglot-ensure)
-         (c++-mode . eglot-ensure)
-         (c-mode . eglot-ensure))
+  :hook ((python-mode-hook . eglot-ensure)
+         (c-mode-common-hook . eglot-ensure))
 )
 
 (leaf exec-path-from-shell
@@ -311,20 +319,6 @@
   :url "https://github.com/purcell/exec-path-from-shell"
   :emacs>= 24.1
   :ensure t)
-
-(leaf flycheck
-  :doc "On-the-fly syntax checking"
-  :req "dash-2.12.1" "pkg-info-0.4" "let-alist-1.0.4" "seq-1.11" "emacs-24.3"
-  :tag "minor-mode" "tools" "languages" "convenience" "emacs>=24.3"
-  :url "http://www.flycheck.org"
-  :emacs>= 24.3
-  :blackout t
-  :ensure t
-  :bind (("M-n" . flycheck-next-error)
-         ("M-p" . flycheck-previous-error))
-  :global-minor-mode global-flycheck-mode
-  :custom '((flycheck-check-syntax-automatically . '(mode-enabled save idle-change))
-            (flycheck-gcc-language-standard . "c++17")))
 
 (leaf go-mode
   :doc "Major mode for the Go programming language"
@@ -340,37 +334,39 @@
   :req "emacs-24.5"
   :tag "matching" "emacs>=24.5"
   :url "https://github.com/abo-abo/swiper"
+  :added "2024-03-27"
   :emacs>= 24.5
   :blackout t
   :ensure t
-  :leaf-defer nil
-  :custom ((ivy-initial-inputs-alist . nil)
-           (ivy-use-virtual-buffers . t)
-           (ivy-use-selectable-prompt . t))
   :global-minor-mode t
   :config
-  (leaf swiper
-    :doc "Isearch with an overview. Oh, man!"
-    :req "emacs-24.5" "ivy-0.13.0"
-    :tag "matching" "emacs>=24.5"
-    :url "https://github.com/abo-abo/swiper"
-    :emacs>= 24.5
-    :ensure t
-    :bind (("C-s" . swiper)))
+  (setq-default ivy-use-virtual-buffers t
+                enable-recursive-minibuffers t)
+)
 
-  (leaf counsel
-    :doc "Various completion functions using Ivy"
-    :req "emacs-24.5" "swiper-0.13.0"
-    :tag "tools" "matching" "convenience" "emacs>=24.5"
-    :url "https://github.com/abo-abo/swiper"
-    :emacs>= 24.5
-    :ensure t
-    :blackout t
-    :bind (("C-S-s" . counsel-imenu)
-           ("C-x C-r" . counsel-recentf))
-    :custom `((counsel-yank-pop-separator . "\n----------\n")
-              (counsel-find-file-ignore-regexp . ,(rx-to-string '(or "./" "../") 'no-group)))
-    :global-minor-mode t))
+(leaf swiper
+  :doc "Isearch with an overview.  Oh, man!"
+  :req "emacs-24.5" "ivy-0.14.2"
+  :tag "matching" "emacs>=24.5"
+  :url "https://github.com/abo-abo/swiper"
+  :added "2024-03-27"
+  :emacs>= 24.5
+  :blackout t
+  :ensure t
+  :after ivy
+  :bind (("C-s" . swiper)
+         ("C-r" . swiper))
+  )
+
+(leaf js2-mode
+  :doc "Improved JavaScript editing mode"
+  :req "emacs-24.1" "cl-lib-0.5"
+  :tag "javascript" "languages" "emacs>=24.1"
+  :url "https://github.com/mooz/js2-mode/"
+  :added "2024-03-27"
+  :emacs>= 24.1
+  :ensure t
+  :mode "\\.js$")
 
 (leaf magit
   :doc "A Git porcelain inside Emacs."
@@ -407,6 +403,19 @@
   :emacs>= 27.1
   :ensure t
   :mode ("\\.md$" "\\.markdown$")
+)
+
+(leaf projectile
+  :doc "Manage and navigate projects in Emacs easily"
+  :req "emacs-25.1"
+  :tag "convenience" "project" "emacs>=25.1"
+  :url "https://github.com/bbatsov/projectile"
+  :added "2024-03-27"
+  :emacs>= 25.1
+  :ensure t
+  :config
+  (projectile-mode +1)
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 )
 
 (setq-default ros-distro (format "/opt/ros/%s/share/emacs/site-lisp/"
