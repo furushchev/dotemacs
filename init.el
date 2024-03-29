@@ -320,6 +320,17 @@
   :emacs>= 24.1
   :ensure t)
 
+(leaf expand-region
+  :doc "Increase selected region by semantic units."
+  :req "emacs-24.4"
+  :tag "region" "marking" "emacs>=24.4"
+  :url "https://github.com/magnars/expand-region.el"
+  :added "2024-03-29"
+  :emacs>= 24.4
+  :ensure t
+  :bind (("C-\\" . er/expand-region))
+)
+
 (leaf go-mode
   :doc "Major mode for the Go programming language"
   :req "emacs-26.1"
@@ -355,8 +366,26 @@
   :ensure t
   :after ivy
   :bind (("C-s" . swiper)
-         ("C-r" . swiper))
-  )
+         ("C-r" . swiper-backward))
+)
+
+(leaf counsel
+  :doc "Various completion functions using Ivy"
+  :req "emacs-24.5" "ivy-0.14.2" "swiper-0.14.2"
+  :tag "tools" "matching" "convenience" "emacs>=24.5"
+  :url "https://github.com/abo-abo/swiper"
+  :added "2024-03-29"
+  :emacs>= 24.5
+  :ensure t
+  :after ivy swiper
+  :bind (("M-x" . counsel-M-x)
+         ("C-c C-d" . counsel-dired)
+         ("C-c C-f" . counsel-find-file)
+         ("C-c C-g" . counsel-git)
+         ("C-c C-g" . counsel-git-grep)
+         ("C-c C-a" . counsel-ag)
+         ("C-c C-l" . counsel-locate))
+)
 
 (leaf js2-mode
   :doc "Improved JavaScript editing mode"
