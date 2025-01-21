@@ -177,6 +177,7 @@
   :hook
   (c-mode-common-hook . (lambda () (c-set-style "linux")
                           (setq c-basic-offset tab-width)
+                          (setq indent-tabs-mode nil)
                           (c-set-offset 'inline-open 0)
                           (c-set-offset 'inline-close 0)
                           (c-set-offset 'member-init-intro 0)
