@@ -55,7 +55,8 @@
 (leaf custom-edit
   :doc "Custom variables for editing"
   :tag "builtin"
-  :custom `((custom-file . ,(locate-user-emacs-file "custom.el"))
+  :custom `((context-menu-mode . t)
+            (custom-file . ,(locate-user-emacs-file "custom.el"))
             (debug-on-error . t)
             (display-warning-minimum-level . :error)
             (enable-local-variables . :safe)
@@ -67,6 +68,8 @@
             (indent-tabs-mode . nil)
             (init-file-debug . t)
             (locale-coding-system . 'utf-8)
+            (minibuffer-prompt-properties . '(read-only t cursor-intangible-mode t face minibuffer-prompt))
+            (read-extended-command-predicate . #'command-completion-default-include-p)
             (read-process-output-max . ,(* 4 1024 1024))
             (require-final-newline . t)
             (tab-width . 2)
@@ -151,6 +154,12 @@
   :tag "builtin"
   :added "2021-01-04"
   :blackout t)
+
+(leaf savehist
+  :doc "Save minibuffer history"
+  :tag "builtin"
+  :added "2025-06-14"
+  :init (savehist-mode))
 
 (leaf saveplace
   :doc "automatically save place in files"
@@ -341,52 +350,25 @@
   :emacs>= 26.1
   :ensure t)
 
-(leaf ivy
-  :doc "Incremental Vertical completYon"
-  :req "emacs-24.5"
-  :tag "matching" "emacs>=24.5"
-  :url "https://github.com/abo-abo/swiper"
-  :added "2024-03-27"
-  :emacs>= 24.5
-  :blackout t
+(leaf consult
+  :doc "Consulting completing-read"
+  :req "emacs-28.1" "compat-30"
+  :tag "completion" "files" "matching" "emacs>=28.1"
+  :url "https://github.com/minad/consult"
+  :added "2025-06-14"
+  :emacs>= 28.1
   :ensure t
-  :global-minor-mode t
-  :config
-  (setq-default ivy-use-virtual-buffers t
-                enable-recursive-minibuffers t)
-)
-
-(leaf swiper
-  :doc "Isearch with an overview.  Oh, man!"
-  :req "emacs-24.5" "ivy-0.14.2"
-  :tag "matching" "emacs>=24.5"
-  :url "https://github.com/abo-abo/swiper"
-  :added "2024-03-27"
-  :emacs>= 24.5
-  :blackout t
-  :ensure t
-  :after ivy
-  :bind (("C-s" . swiper)
-         ("C-r" . swiper-backward))
-)
-
-(leaf counsel
-  :doc "Various completion functions using Ivy"
-  :req "emacs-24.5" "ivy-0.14.2" "swiper-0.14.2"
-  :tag "tools" "matching" "convenience" "emacs>=24.5"
-  :url "https://github.com/abo-abo/swiper"
-  :added "2024-03-29"
-  :emacs>= 24.5
-  :ensure t
-  :after ivy swiper
-  :bind (("M-x" . counsel-M-x)
-         ("C-c C-d" . counsel-dired)
-         ("C-c C-f" . counsel-find-file)
-         ("C-c C-g" . counsel-git)
-         ("C-c C-g" . counsel-git-grep)
-         ("C-c C-a" . counsel-ag)
-         ("C-c C-l" . counsel-locate))
-)
+  :init
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :bind (("C-s" . consult-line)
+         ("C-x C-f" . consult-find)
+         ("C-x b" . consult-buffer)
+         ("C-x C-b" . consult-project-buffer)
+         ("M-g" . consult-goto-line)
+         ("M-o" . consult-outline)
+         ("M-s s" . consult-git-grep)))
 
 (leaf js2-mode
   :doc "Improved JavaScript editing mode"
@@ -424,16 +406,39 @@
                         (magit-get-current-branch))))
   (define-key magit-mode-map "G" #'magit-open-github-pull-request-url))
 
+(leaf marginalia
+  :doc "Enrich existing commands with completion annotations"
+  :req "emacs-28.1" "compat-30"
+  :tag "completion" "matching" "help" "docs" "emacs>=28.1"
+  :url "https://github.com/minad/marginalia"
+  :added "2025-06-14"
+  :emacs>= 28.1
+  :ensure t
+  ;; :after compat
+  :init (marginalia-mode))
+
 (leaf markdown-mode
   :doc "Major mode for Markdown-formatted text"
   :req "emacs-27.1"
   :tag "itex" "github flavored markdown" "markdown" "emacs>=27.1"
-  :url "https://jblevins.org/projects/markdown-mode/"
+  :url "https://jblevins.org/projects/markdown-mode"
   :added "2024-02-22"
   :emacs>= 27.1
   :ensure t
-  :mode ("\\.md$" "\\.markdown$")
-)
+  :mode ("\\.md$" "\\.markdown$"))
+
+(leaf orderless
+  :doc "Completion style for matching regexps in any order"
+  :req "emacs-27.1" "compat-30"
+  :tag "completion" "matching" "emacs>=27.1"
+  :url "https://github.com/oantolin/orderless"
+  :added "2025-06-14"
+  :emacs>= 27.1
+  :ensure t
+  ;; :after compat
+  :custom '((completion-styles . '(orderless basic))
+            (completion-category-defaults . nil)
+            (completion-category-overrides . '((file (styles partial-completion))))))
 
 (leaf projectile
   :doc "Manage and navigate projects in Emacs easily"
@@ -464,6 +469,17 @@
   :config
   (invoke-rosemacs)
   (global-set-key "\C-x\C-r" ros-keymap))
+
+(leaf vertico
+  :doc "VERTical Interactive COmpletion"
+  :req "emacs-28.1" "compat-30"
+  :tag "completion" "matching" "files" "convenience" "emacs>=28.1"
+  :url "https://github.com/minad/vertico"
+  :added "2025-06-14"
+  :emacs>= 28.1
+  :ensure t
+  ;; :after compat
+  :init (vertico-mode))
 
 (leaf web-mode
   :doc "major mode for editing web templates"
