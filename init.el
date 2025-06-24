@@ -510,7 +510,7 @@
   :added "2021-01-04"
   :emacs>= 24.1
   :ensure t
-  :mode "\\.ya?ml$")
+  :mode ("\\.ya?ml$" "\\.repos$"))
 
 (leaf yasnippet
   :doc "Yet another snippet extension for Emacs"
