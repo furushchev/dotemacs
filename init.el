@@ -367,7 +367,7 @@
          ("C-x b" . consult-buffer)
          ("C-x C-b" . consult-project-buffer)
          ("M-g" . consult-goto-line)
-         ("M-o" . consult-outline)
+         ("M-o" . consult-imenu)
          ("M-s s" . consult-git-grep)))
 
 (leaf js2-mode
@@ -478,6 +478,13 @@
   :config
   (invoke-rosemacs)
   (global-set-key "\C-x\C-r" ros-keymap))
+
+(leaf systemrdl-mode
+  :tag "out-of-MELPA"
+  :added "2025-06-23"
+  :load-path `,(expand-file-name "site-lisp/systemrdl-mode" user-emacs-directory)
+  :require t
+  :mode ("\\.rdl"))
 
 (leaf vertico
   :doc "VERTical Interactive COmpletion"
