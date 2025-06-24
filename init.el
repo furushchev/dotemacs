@@ -453,6 +453,15 @@
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 )
 
+(leaf protobuf-mode
+  :doc "Major mode for editing protocol buffers"
+  :tag "languages" "protobuf" "google"
+  :url "https://github.com/protocolbuffers/protobuf"
+  :added "2025-04-28"
+  :ensure t
+  :mode ("\\.proto")
+)
+
 (setq-default ros-distro (format "/opt/ros/%s/share/emacs/site-lisp/"
                                  (or (getenv "ROS_DISTRO") "melodic")))
 (leaf rosemacs
