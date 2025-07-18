@@ -427,7 +427,7 @@
         xref-show-definitions-function #'consult-xref)
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :bind (("C-s" . consult-line)
-         ("C-x C-f" . consult-find)
+         ;; ("C-x C-f" . consult-find)
          ("C-x b" . consult-buffer)
          ("C-x C-b" . consult-project-buffer)
          ("M-g" . consult-goto-line)
