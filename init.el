@@ -1,6 +1,6 @@
 ;; .emacs.d/init.el
 ;;
-;; Author: Yuki Furuta <me@furushchev.ru>
+;; Author: Yuki Furuta <me@furushchev.jp>
 ;;
 
 ;; Setup leaf.el
@@ -55,7 +55,8 @@
 (leaf custom-edit
   :doc "Custom variables for editing"
   :tag "builtin"
-  :custom `((custom-file . ,(locate-user-emacs-file "custom.el"))
+  :custom `((context-menu-mode . t)
+            (custom-file . ,(locate-user-emacs-file "custom.el"))
             (debug-on-error . t)
             (display-warning-minimum-level . :error)
             (enable-local-variables . :safe)
@@ -67,6 +68,8 @@
             (indent-tabs-mode . nil)
             (init-file-debug . t)
             (locale-coding-system . 'utf-8)
+            (minibuffer-prompt-properties . '(read-only t cursor-intangible-mode t face minibuffer-prompt))
+            (read-extended-command-predicate . #'command-completion-default-include-p)
             (read-process-output-max . ,(* 4 1024 1024))
             (require-final-newline . t)
             (tab-width . 2)
@@ -152,6 +155,12 @@
   :added "2021-01-04"
   :blackout t)
 
+(leaf savehist
+  :doc "Save minibuffer history"
+  :tag "builtin"
+  :added "2025-06-14"
+  :init (savehist-mode))
+
 (leaf saveplace
   :doc "automatically save place in files"
   :tag "builtin"
@@ -177,6 +186,7 @@
   :hook
   (c-mode-common-hook . (lambda () (c-set-style "linux")
                           (setq c-basic-offset tab-width)
+                          (setq indent-tabs-mode nil)
                           (c-set-offset 'inline-open 0)
                           (c-set-offset 'inline-close 0)
                           (c-set-offset 'member-init-intro 0)
@@ -197,6 +207,70 @@
   :mode ("\\.sh$" "\\.bash$" "\\.zsh$")
   :custom `((sh-basic-offset . ,tab-width)
             (sh-indentation . ,tab-width)))
+
+(leaf treesit
+  :mode (("\\.tsx\\'" . tsx-ts-mode)
+         ("\\.js\\'"  . typescript-ts-mode)
+         ("\\.mjs\\'" . typescript-ts-mode)
+         ("\\.mts\\'" . typescript-ts-mode)
+         ("\\.cjs\\'" . typescript-ts-mode)
+         ("\\.ts\\'"  . typescript-ts-mode)
+         ("\\.jsx\\'" . tsx-ts-mode)
+         ("\\.json\\'" .  json-ts-mode)
+         ("\\.Dockerfile\\'" . dockerfile-ts-mode)
+         ("\\.prisma\\'" . prisma-ts-mode)
+         )
+  :preface
+  (defun os/setup-install-grammars ()
+    "Install Tree-sitter grammars if they are absent."
+    (interactive)
+    (dolist (grammar
+             '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.20.0"))
+               (bash "https://github.com/tree-sitter/tree-sitter-bash")
+               (html . ("https://github.com/tree-sitter/tree-sitter-html" "v0.20.1"))
+               (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.21.2" "src"))
+               (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.20.2"))
+               (python . ("https://github.com/tree-sitter/tree-sitter-python" "v0.20.4"))
+               (go "https://github.com/tree-sitter/tree-sitter-go" "v0.20.0")
+               (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+               (make "https://github.com/alemuller/tree-sitter-make")
+               (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+               (cmake "https://github.com/uyha/tree-sitter-cmake")
+               (c "https://github.com/tree-sitter/tree-sitter-c")
+               (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+               (toml "https://github.com/tree-sitter/tree-sitter-toml")
+               (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "tsx/src"))
+               (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "typescript/src"))
+               (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))
+               (prisma "https://github.com/victorhqc/tree-sitter-prisma")))
+      (add-to-list 'treesit-language-source-alist grammar)
+      ;; Only install `grammar' if we don't already have it
+      ;; installed. However, if you want to *update* a grammar then
+      ;; this obviously prevents that from happening.
+      (unless (treesit-language-available-p (car grammar))
+        (treesit-install-language-grammar (car grammar)))))
+
+  ;; Optional, but recommended. Tree-sitter enabled major modes are
+  ;; distinct from their ordinary counterparts.
+  ;;
+  ;; You can remap major modes with `major-mode-remap-alist'. Note
+  ;; that this does *not* extend to hooks! Make sure you migrate them
+  ;; also
+  (dolist (mapping
+           '((python-mode . python-ts-mode)
+             (css-mode . css-ts-mode)
+             (typescript-mode . typescript-ts-mode)
+             (js-mode . typescript-ts-mode)
+             (js2-mode . typescript-ts-mode)
+             (bash-mode . bash-ts-mode)
+             (css-mode . css-ts-mode)
+             (json-mode . json-ts-mode)
+             (js-json-mode . json-ts-mode)
+             (sh-mode . bash-ts-mode)
+             (sh-base-mode . bash-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping))
+  :config
+  (os/setup-install-grammars))
 
 (leaf whitespace
   :doc "minor mode to visualize HARD TAB, ZENKAKU SPACE"
@@ -231,9 +305,7 @@
   :emacs>= 24.3
   :blackout t
   :ensure t
-  :leaf-defer nil
-  :bind (("<C-tab>" . company-complete)
-         (company-active-map
+  :bind ((company-active-map
           ("M-n" . nil)
           ("M-p" . nil)
           ("C-s" . company-filter-candidates)
@@ -249,19 +321,6 @@
            (company-minimum-prefix-length . 1)
            (company-transformers . '(company-sort-by-occurrence)))
   :global-minor-mode global-company-mode)
-
-(leaf company-c-headers
-  :disabled t
-  :doc "Company mode backend for C/C++ header files"
-  :req "emacs-24.1" "company-0.8"
-  :tag "company" "development" "emacs>=24.1"
-  :added "2020-03-25"
-  :emacs>= 24.1
-  :ensure t
-  :after company
-  :defvar company-backends
-  :config
-  (add-to-list 'company-backends 'company-c-headers))
 
 (leaf cmake-mode
   :doc "major-mode for editing CMake sources"
@@ -279,6 +338,18 @@
   :mode ("\\.cuh?$")
   :ensure t)
 
+(leaf diff-hl
+  :doc "Highlight uncommitted changes using VC"
+  :req "cl-lib-0.2" "emacs-25.1"
+  :tag "diff" "vc" "emacs>=25.1"
+  :url "https://github.com/dgutov/diff-hl"
+  :added "2024-03-27"
+  :emacs>= 25.1
+  :ensure t
+  :config
+  (global-diff-hl-mode)
+  (diff-hl-margin-mode))
+
 (leaf dockerfile-mode
   :doc "Major mode for editing Docker's Dockerfiles"
   :req "emacs-24"
@@ -289,32 +360,30 @@
   :mode ("\\.Dockerfile$")
   :ensure t)
 
-(leaf dumb-jump
-  :doc "Jump to definition for 40+ languages without configuration"
-  :req "emacs-24.3" "s-1.11.0" "dash-2.9.0" "popup-0.5.3"
-  :tag "programming" "emacs>=24.3"
-  :added "2021-01-04"
-  :url "https://github.com/jacktasia/dumb-jump"
-  :emacs>= 24.3
-  :ensure t
-  :global-minor-mode dumb-jump-mode
-  :bind (("M-d" . dumb-jump-go)
-         ("M-S-d" . dumb-jump-back))
-  :custom '((dumb-jump-selector . 'ivy)
-            (dumb-jump-use-visible-window . nil)))
-
 (leaf eglot
-  :doc "Client for Language Server Protocol (LSP) servers"
-  :req "emacs-26.1" "jsonrpc-1.0.14" "flymake-1.0.9" "project-0.3.0" "xref-1.0.1" "eldoc-1.11.0"
-  :tag "languages" "convenience" "emacs>=26.1"
+  :doc "The Emacs Client for LSP servers"
+  :req "emacs-26.3" "jsonrpc-1.0.16" "flymake-1.2.1" "project-0.9.8" "xref-1.6.2" "eldoc-1.11.0" "seq-2.23" "external-completion-0.1"
+  :tag "languages" "convenience" "emacs>=26.3"
   :url "https://github.com/joaotavora/eglot"
-  :added "2022-04-29"
-  :emacs>= 26.1
+  :added "2024-02-22"
+  :emacs>= 26.3
   :ensure t
-  :after eldoc xref project ;; jsonrpc flymake
-  :hook
-  ((python-mode . eglot-ensure)
-   (c-mode-common-hook . eglot-ensure)))
+  :config
+  (add-to-list 'eglot-server-programs
+               `(python-mode . ,(eglot-alternatives
+                                 '("pylsp"
+                                   "jedi-language-server"
+                                   ("pyright-langserver" "--stdio")))))
+  (add-to-list 'eglot-server-programs
+               `((c++-mode c-mode) . ,(eglot-alternatives
+                                       '("clangd"
+                                         "clangd-10"
+                                         "clangd-9"
+                                         "clangd-8"
+                                         "clangd-7"))))
+  :hook ((python-mode-hook . eglot-ensure)
+         (c-mode-common-hook . eglot-ensure))
+)
 
 (leaf exec-path-from-shell
   :doc "Get environment variables such as $PATH from the shell"
@@ -325,66 +394,55 @@
   :emacs>= 24.1
   :ensure t)
 
-(leaf flycheck
-  :doc "On-the-fly syntax checking"
-  :req "dash-2.12.1" "pkg-info-0.4" "let-alist-1.0.4" "seq-1.11" "emacs-24.3"
-  :tag "minor-mode" "tools" "languages" "convenience" "emacs>=24.3"
-  :url "http://www.flycheck.org"
-  :emacs>= 24.3
-  :blackout t
+(leaf expand-region
+  :doc "Increase selected region by semantic units."
+  :req "emacs-24.4"
+  :tag "region" "marking" "emacs>=24.4"
+  :url "https://github.com/magnars/expand-region.el"
+  :added "2024-03-29"
+  :emacs>= 24.4
   :ensure t
-  :bind (("M-n" . flycheck-next-error)
-         ("M-p" . flycheck-previous-error))
-  :global-minor-mode global-flycheck-mode
-  :custom '((flycheck-check-syntax-automatically . '(mode-enabled save idle-change))
-            (flycheck-gcc-language-standard . "c++17")))
+  :bind (("C-\\" . er/expand-region))
+)
 
-(leaf git-gutter+
-  :doc "Manage Git hunks straight from the buffer"
-  :req "git-commit-0" "dash-0"
-  :tag "vc" "git"
-  :added "2021-01-04"
-  :url "https://github.com/nonsequitur/git-gutter-plus"
+(leaf go-mode
+  :doc "Major mode for the Go programming language"
+  :req "emacs-26.1"
+  :tag "go" "languages" "emacs>=26.1"
+  :url "https://github.com/dominikh/go-mode.el"
+  :added "2023-04-04"
+  :emacs>= 26.1
+  :ensure t)
+
+(leaf consult
+  :doc "Consulting completing-read"
+  :req "emacs-28.1" "compat-30"
+  :tag "completion" "files" "matching" "emacs>=28.1"
+  :url "https://github.com/minad/consult"
+  :added "2025-06-14"
+  :emacs>= 28.1
   :ensure t
-  :after git-commit
-  :global-minor-mode global-git-gutter+-mode)
+  :init
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :bind (("C-s" . consult-line)
+         ;; ("C-x C-f" . consult-find)
+         ("C-x b" . consult-buffer)
+         ("C-x C-b" . consult-project-buffer)
+         ("M-g" . consult-goto-line)
+         ("M-o" . consult-imenu)
+         ("M-s s" . consult-git-grep)))
 
-(leaf ivy
-  :doc "Incremental Vertical completYon"
-  :req "emacs-24.5"
-  :tag "matching" "emacs>=24.5"
-  :url "https://github.com/abo-abo/swiper"
-  :emacs>= 24.5
-  :blackout t
+(leaf js2-mode
+  :doc "Improved JavaScript editing mode"
+  :req "emacs-24.1" "cl-lib-0.5"
+  :tag "javascript" "languages" "emacs>=24.1"
+  :url "https://github.com/mooz/js2-mode/"
+  :added "2024-03-27"
+  :emacs>= 24.1
   :ensure t
-  :leaf-defer nil
-  :custom ((ivy-initial-inputs-alist . nil)
-           (ivy-use-virtual-buffers . t)
-           (ivy-use-selectable-prompt . t))
-  :global-minor-mode t
-  :config
-  (leaf swiper
-    :doc "Isearch with an overview. Oh, man!"
-    :req "emacs-24.5" "ivy-0.13.0"
-    :tag "matching" "emacs>=24.5"
-    :url "https://github.com/abo-abo/swiper"
-    :emacs>= 24.5
-    :ensure t
-    :bind (("C-s" . swiper)))
-
-  (leaf counsel
-    :doc "Various completion functions using Ivy"
-    :req "emacs-24.5" "swiper-0.13.0"
-    :tag "tools" "matching" "convenience" "emacs>=24.5"
-    :url "https://github.com/abo-abo/swiper"
-    :emacs>= 24.5
-    :ensure t
-    :blackout t
-    :bind (("C-S-s" . counsel-imenu)
-           ("C-x C-r" . counsel-recentf))
-    :custom `((counsel-yank-pop-separator . "\n----------\n")
-              (counsel-find-file-ignore-regexp . ,(rx-to-string '(or "./" "../") 'no-group)))
-    :global-minor-mode t))
+  :mode "\\.js$")
 
 (leaf magit
   :doc "A Git porcelain inside Emacs."
@@ -412,15 +470,61 @@
                         (magit-get-current-branch))))
   (define-key magit-mode-map "G" #'magit-open-github-pull-request-url))
 
+(leaf marginalia
+  :doc "Enrich existing commands with completion annotations"
+  :req "emacs-28.1" "compat-30"
+  :tag "completion" "matching" "help" "docs" "emacs>=28.1"
+  :url "https://github.com/minad/marginalia"
+  :added "2025-06-14"
+  :emacs>= 28.1
+  :ensure t
+  ;; :after compat
+  :init (marginalia-mode))
+
 (leaf markdown-mode
   :doc "Major mode for Markdown-formatted text"
+  :req "emacs-27.1"
+  :tag "itex" "github flavored markdown" "markdown" "emacs>=27.1"
+  :url "https://jblevins.org/projects/markdown-mode"
+  :added "2024-02-22"
+  :emacs>= 27.1
+  :ensure t
+  :mode ("\\.md$" "\\.markdown$"))
+
+(leaf orderless
+  :doc "Completion style for matching regexps in any order"
+  :req "emacs-27.1" "compat-30"
+  :tag "completion" "matching" "emacs>=27.1"
+  :url "https://github.com/oantolin/orderless"
+  :added "2025-06-14"
+  :emacs>= 27.1
+  :ensure t
+  ;; :after compat
+  :custom '((completion-styles . '(orderless basic))
+            (completion-category-defaults . nil)
+            (completion-category-overrides . '((file (styles partial-completion))))))
+
+(leaf projectile
+  :doc "Manage and navigate projects in Emacs easily"
   :req "emacs-25.1"
-  :tag "itex" "github flavored markdown" "markdown" "emacs>=25.1"
-  :added "2021-01-04"
-  :url "https://jblevins.org/projects/markdown-mode/"
+  :tag "convenience" "project" "emacs>=25.1"
+  :url "https://github.com/bbatsov/projectile"
+  :added "2024-03-27"
   :emacs>= 25.1
-  :mode ("\\.md$" "\\.markdown$")
-  :ensure t)
+  :ensure t
+  :config
+  (projectile-mode +1)
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+)
+
+(leaf protobuf-mode
+  :doc "Major mode for editing protocol buffers"
+  :tag "languages" "protobuf" "google"
+  :url "https://github.com/protocolbuffers/protobuf"
+  :added "2025-04-28"
+  :ensure t
+  :mode ("\\.proto")
+)
 
 (setq-default ros-distro (format "/opt/ros/%s/share/emacs/site-lisp/"
                                  (or (getenv "ROS_DISTRO") "melodic")))
@@ -439,6 +543,24 @@
   (invoke-rosemacs)
   (global-set-key "\C-x\C-r" ros-keymap))
 
+(leaf systemrdl-mode
+  :tag "out-of-MELPA"
+  :added "2025-06-23"
+  :load-path `,(expand-file-name "site-lisp/systemrdl-mode" user-emacs-directory)
+  :require t
+  :mode ("\\.rdl"))
+
+(leaf vertico
+  :doc "VERTical Interactive COmpletion"
+  :req "emacs-28.1" "compat-30"
+  :tag "completion" "matching" "files" "convenience" "emacs>=28.1"
+  :url "https://github.com/minad/vertico"
+  :added "2025-06-14"
+  :emacs>= 28.1
+  :ensure t
+  ;; :after compat
+  :init (vertico-mode))
+
 (leaf web-mode
   :doc "major mode for editing web templates"
   :req "emacs-23.1"
@@ -447,7 +569,7 @@
   :url "https://web-mode.org"
   :emacs>= 23.1
   :ensure t
-  :mode ("\\.p?html$" "\\.php$" "\\.xml$" "\\.jsx?$" "\\.ejs$")
+  :mode ("\\.p?html$" "\\.php$" "\\.xml$" "\\.jsx?$" "\\.ejs$" "\\.json$")
   :custom `((web-mode-markup-indent-offset . ,tab-width)
             (web-mode-css-indent-offset . ,tab-width)
             (web-mode-code-indent-offset . ,tab-width)))
@@ -459,8 +581,7 @@
   :added "2021-01-04"
   :emacs>= 24.1
   :ensure t
-  :mode "\\.ya?ml$")
-
+  :mode ("\\.ya?ml$" "\\.repos$"))
 
 (leaf yasnippet
   :doc "Yet another snippet extension for Emacs"

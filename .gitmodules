@@ -1,0 +1,3 @@
+[submodule "site-lisp/systemrdl-mode"]
+	path = site-lisp/systemrdl-mode
+	url = https://github.com/paul-donahue/systemrdl-mode
