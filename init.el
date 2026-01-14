@@ -204,63 +204,18 @@
   :custom `((sh-basic-offset . ,tab-width)
             (sh-indentation . ,tab-width)))
 
-(leaf treesit
-  :mode (("\\.tsx\\'" . tsx-ts-mode)
-         ("\\.js\\'"  . typescript-ts-mode)
-         ("\\.mjs\\'" . typescript-ts-mode)
-         ("\\.mts\\'" . typescript-ts-mode)
-         ("\\.cjs\\'" . typescript-ts-mode)
-         ("\\.ts\\'"  . typescript-ts-mode)
-         ("\\.jsx\\'" . tsx-ts-mode)
-         ("\\.json\\'" .  json-ts-mode)
-         ("\\.Dockerfile\\'" . dockerfile-ts-mode))
-  :preface
-  (defun os/setup-install-grammars ()
-    "Install Tree-sitter grammars if they are absent."
-    (interactive)
-    (dolist (grammar
-             '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.20.0"))
-               (bash . ("https://github.com/tree-sitter/tree-sitter-bash" "v0.21.0"))
-               (html . ("https://github.com/tree-sitter/tree-sitter-html" "v0.20.1"))
-               (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.21.2" "src"))
-               (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.20.2"))
-               (python . ("https://github.com/tree-sitter/tree-sitter-python" "v0.20.4"))
-               (go . ("https://github.com/tree-sitter/tree-sitter-go" "v0.20.0"))
-               (markdown . ("https://github.com/ikatyang/tree-sitter-markdown" "v0.7.1"))
-               (make . ("https://github.com/alemuller/tree-sitter-make" "a4b9187"))
-               (elisp . ("https://github.com/Wilfred/tree-sitter-elisp" "v1.3.0"))
-               (cmake . ("https://github.com/uyha/tree-sitter-cmake" "v0.4.1"))
-               (c . ("https://github.com/tree-sitter/tree-sitter-c" "v0.21.3"))
-               (cpp . ("https://github.com/tree-sitter/tree-sitter-cpp" "v0.22.0"))
-               (toml . ("https://github.com/tree-sitter/tree-sitter-toml" "v0.5.1"))
-               (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "tsx/src"))
-               (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "typescript/src"))
-               (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))))
-      (add-to-list 'treesit-language-source-alist grammar)
-      ;; Only install `grammar' if we don't already have it
-      ;; installed. However, if you want to *update* a grammar then
-      ;; this obviously prevents that from happening.
-      (unless (treesit-language-available-p (car grammar))
-        (treesit-install-language-grammar (car grammar)))))
-
-  ;; Remap legacy modes to tree-sitter modes
-  ;; Note: This does *not* extend to hooks! Migrate hooks separately
-  (dolist (mapping
-           '((python-mode . python-ts-mode)
-             (c-mode . c-ts-mode)
-             (c++-mode . c++-ts-mode)
-             (bash-mode . bash-ts-mode)
-             (sh-mode . bash-ts-mode)
-             (css-mode . css-ts-mode)
-             (typescript-mode . typescript-ts-mode)
-             (js-mode . typescript-ts-mode)
-             (js2-mode . typescript-ts-mode)
-             (json-mode . json-ts-mode)
-             (js-json-mode . json-ts-mode)
-             (yaml-mode . yaml-ts-mode)))
-    (add-to-list 'major-mode-remap-alist mapping))
+(leaf treesit-auto
+  :doc "Automatically install and use tree-sitter grammars"
+  :req "emacs-29.0"
+  :tag "treesitter" "languages" "emacs>=29.0"
+  :url "https://github.com/renzmann/treesit-auto"
+  :added "2026-01-14"
+  :emacs>= 29.0
+  :ensure t
+  :require t
+  :custom ((treesit-auto-install . 'prompt))  ; Prompt before installing grammars
   :config
-  (os/setup-install-grammars))
+  (global-treesit-auto-mode))
 
 (leaf whitespace
   :doc "minor mode to visualize HARD TAB, ZENKAKU SPACE"
@@ -421,28 +376,21 @@
                                    "jedi-language-server"
                                    ("pyright-langserver" "--stdio")))))
   (add-to-list 'eglot-server-programs
-               `((c++-mode c-mode) . ,(eglot-alternatives
-                                       '("clangd"
-                                         "clangd-20"
-                                         "clangd-19"
-                                         "clangd-18"
-                                         "clangd-10"
-                                         "clangd-9"
-                                         "clangd-8"
-                                         "clangd-7"))))
-
-  ;; Optional: Format-on-save helper
-  (defun my/eglot-format-on-save-mode ()
-    "Enable format-on-save for Eglot-managed buffers."
-    (add-hook 'before-save-hook #'eglot-format-buffer nil t))
-
-  ;; Enable format-on-save for specific languages (uncomment to enable)
-  ;; (add-hook 'python-ts-mode-hook #'my/eglot-format-on-save-mode)
-  ;; (add-hook 'c-ts-mode-hook #'my/eglot-format-on-save-mode)
-  ;; (add-hook 'c++-ts-mode-hook #'my/eglot-format-on-save-mode)
+               `((c++-mode c-mode c++-ts-mode c-ts-mode) . ,(eglot-alternatives
+                                                              '("clangd"
+                                                                "clangd-20"
+                                                                "clangd-19"
+                                                                "clangd-18"
+                                                                "clangd-10"
+                                                                "clangd-9"
+                                                                "clangd-8"
+                                                                "clangd-7"))))
 
   :hook ((python-mode-hook . eglot-ensure)
-         (c-mode-common-hook . eglot-ensure))
+         (c-mode-hook . eglot-ensure)
+         (c++-mode-hook . eglot-ensure)
+         (c-ts-mode-hook . eglot-ensure)
+         (c++-ts-mode-hook . eglot-ensure))
 )
 
 (leaf exec-path-from-shell
