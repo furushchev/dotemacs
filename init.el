@@ -11,6 +11,8 @@
                        ("gnu" . "https://elpa.gnu.org/packages/")))
   (package-initialize)
   (when (< emacs-major-version 26)
+    ;; WARNING: Signature verification disabled for Emacs <26
+    ;; Only use with trusted package sources
     (setq package-check-signature nil)
     ;; dummy function for blackout error
     (defun blackout (&rest args) t))
@@ -46,11 +48,9 @@
 (leaf custom-user
   :doc "Custom variables for user"
   :tag "builtin"
-  :custom `((user-full-name . "Yuki Furuta")
-            (user-login-name . "furushchev")
-            (user-mail-address . "y.furuta@gitai.tech"))
-  :config
-  (defun user-mail-address () user-mail-address))
+  :custom `((user-full-name . ,(or (getenv "USER_FULL_NAME") "Yuki Furuta"))
+            (user-login-name . ,(or (getenv "USER_LOGIN_NAME") "furushchev"))
+            (user-mail-address . ,(or (getenv "USER_EMAIL") "y.furuta@gitai.tech"))))
 
 (leaf custom-edit
   :doc "Custom variables for editing"
@@ -94,9 +94,8 @@
             (frame-background-mode . 'dark)
             (inhibit-startup-screen . t)
             (inhibit-startup-message . t)
-            (initial-scratch-messaage . nil)
+            (initial-scratch-message . nil)
             (line-number-mode . t)
-            (linum-delay . t)
             (mouse-wheel-scroll-amount . '(1 ((control) . 5)))
             (ring-bell-function . 'ignore)
             (scroll-bar-mode . nil)
@@ -104,10 +103,7 @@
             (scroll-preserve-screen-position . t)
             (show-paren-delay . 0)
             (show-paren-mode . t)
-            (text-quoting-style . 'straight))
-  :config
-  (defadvice linum-schedule (around my-linum-sched () activate)
-    (run-with-idle-timer 0.2 nil #'linum-update-current)))
+            (text-quoting-style . 'straight)))
 
 (leaf custom-window-system
   :doc "Custom variables on window system"
@@ -217,32 +213,29 @@
          ("\\.ts\\'"  . typescript-ts-mode)
          ("\\.jsx\\'" . tsx-ts-mode)
          ("\\.json\\'" .  json-ts-mode)
-         ("\\.Dockerfile\\'" . dockerfile-ts-mode)
-         ("\\.prisma\\'" . prisma-ts-mode)
-         )
+         ("\\.Dockerfile\\'" . dockerfile-ts-mode))
   :preface
   (defun os/setup-install-grammars ()
     "Install Tree-sitter grammars if they are absent."
     (interactive)
     (dolist (grammar
              '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.20.0"))
-               (bash "https://github.com/tree-sitter/tree-sitter-bash")
+               (bash . ("https://github.com/tree-sitter/tree-sitter-bash" "v0.21.0"))
                (html . ("https://github.com/tree-sitter/tree-sitter-html" "v0.20.1"))
                (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.21.2" "src"))
                (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.20.2"))
                (python . ("https://github.com/tree-sitter/tree-sitter-python" "v0.20.4"))
-               (go "https://github.com/tree-sitter/tree-sitter-go" "v0.20.0")
-               (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-               (make "https://github.com/alemuller/tree-sitter-make")
-               (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-               (cmake "https://github.com/uyha/tree-sitter-cmake")
-               (c "https://github.com/tree-sitter/tree-sitter-c")
-               (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
-               (toml "https://github.com/tree-sitter/tree-sitter-toml")
+               (go . ("https://github.com/tree-sitter/tree-sitter-go" "v0.20.0"))
+               (markdown . ("https://github.com/ikatyang/tree-sitter-markdown" "v0.7.1"))
+               (make . ("https://github.com/alemuller/tree-sitter-make" "a4b9187"))
+               (elisp . ("https://github.com/Wilfred/tree-sitter-elisp" "v1.3.0"))
+               (cmake . ("https://github.com/uyha/tree-sitter-cmake" "v0.4.1"))
+               (c . ("https://github.com/tree-sitter/tree-sitter-c" "v0.21.3"))
+               (cpp . ("https://github.com/tree-sitter/tree-sitter-cpp" "v0.22.0"))
+               (toml . ("https://github.com/tree-sitter/tree-sitter-toml" "v0.5.1"))
                (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "tsx/src"))
                (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "typescript/src"))
-               (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))
-               (prisma "https://github.com/victorhqc/tree-sitter-prisma")))
+               (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))))
       (add-to-list 'treesit-language-source-alist grammar)
       ;; Only install `grammar' if we don't already have it
       ;; installed. However, if you want to *update* a grammar then
@@ -250,24 +243,21 @@
       (unless (treesit-language-available-p (car grammar))
         (treesit-install-language-grammar (car grammar)))))
 
-  ;; Optional, but recommended. Tree-sitter enabled major modes are
-  ;; distinct from their ordinary counterparts.
-  ;;
-  ;; You can remap major modes with `major-mode-remap-alist'. Note
-  ;; that this does *not* extend to hooks! Make sure you migrate them
-  ;; also
+  ;; Remap legacy modes to tree-sitter modes
+  ;; Note: This does *not* extend to hooks! Migrate hooks separately
   (dolist (mapping
            '((python-mode . python-ts-mode)
+             (c-mode . c-ts-mode)
+             (c++-mode . c++-ts-mode)
+             (bash-mode . bash-ts-mode)
+             (sh-mode . bash-ts-mode)
              (css-mode . css-ts-mode)
              (typescript-mode . typescript-ts-mode)
              (js-mode . typescript-ts-mode)
              (js2-mode . typescript-ts-mode)
-             (bash-mode . bash-ts-mode)
-             (css-mode . css-ts-mode)
              (json-mode . json-ts-mode)
              (js-json-mode . json-ts-mode)
-             (sh-mode . bash-ts-mode)
-             (sh-base-mode . bash-ts-mode)))
+             (yaml-mode . yaml-ts-mode)))
     (add-to-list 'major-mode-remap-alist mapping))
   :config
   (os/setup-install-grammars))
@@ -276,10 +266,12 @@
   :doc "minor mode to visualize HARD TAB, ZENKAKU SPACE"
   :tag "builtin"
   :added "2021-01-04"
-  :global-minor-mode global-whitespace-mode
   :custom '((whitespace-space-regexp . "\\(\u3000+\\)")
             (whitespace-style . '(face tabs tab-mark spaces space-mark))
             (whitespace-display-mappings . '()))
+  :hook ((prog-mode-hook . whitespace-mode)
+         (text-mode-hook . whitespace-mode)
+         (conf-mode-hook . whitespace-mode))
   :config
   (set-face-background 'whitespace-space "red")
   (set-face-background 'whitespace-tab "grey"))
@@ -298,13 +290,14 @@
   :commands arduino-mode)
 
 (leaf company
-  :doc "Modular text completion framework"
+  :doc "Modular text completion framework - DISABLED in favor of Corfu (2026-01-13)"
   :req "emacs-24.3"
   :tag "matching" "convenience" "abbrev" "emacs>=24.3"
   :url "http://company-mode.github.io/"
   :emacs>= 24.3
   :blackout t
   :ensure t
+  :when nil  ; Disabled: set to t to re-enable
   :bind ((company-active-map
           ("M-n" . nil)
           ("M-p" . nil)
@@ -320,7 +313,53 @@
   :custom ((company-idle-delay . 0)
            (company-minimum-prefix-length . 1)
            (company-transformers . '(company-sort-by-occurrence)))
-  :global-minor-mode global-company-mode)
+  :hook ((prog-mode-hook . company-mode)
+         (text-mode-hook . company-mode)))
+
+(leaf corfu
+  :doc "Completion Overlay Region FUnction - modern completion UI"
+  :req "emacs-27.1"
+  :tag "completion" "convenience" "emacs>=27.1"
+  :url "https://github.com/minad/corfu"
+  :added "2026-01-13"
+  :emacs>= 27.1
+  :ensure t
+  :custom ((corfu-auto . t)                    ; Auto-show completions
+           (corfu-cycle . t)                   ; Cycle through candidates
+           (corfu-auto-delay . 0.0)            ; No delay for auto-completion
+           (corfu-auto-prefix . 2)             ; Minimum prefix length
+           (corfu-popupinfo-delay . 0.5)       ; Documentation popup delay
+           (corfu-preview-current . t)         ; Preview current candidate
+           (corfu-preselect . 'prompt)         ; Preselect behavior
+           (corfu-on-exact-match . nil))       ; Don't auto-complete on exact match
+  :bind (:corfu-map
+         ("TAB" . corfu-next)
+         ([tab] . corfu-next)
+         ("S-TAB" . corfu-previous)
+         ([backtab] . corfu-previous)
+         ("RET" . corfu-insert)
+         ("M-d" . corfu-show-documentation)
+         ("M-l" . corfu-show-location))
+  :init
+  (global-corfu-mode)
+  (corfu-popupinfo-mode)                       ; Show documentation popup
+  (corfu-history-mode))                        ; Remember completion history
+
+(leaf cape
+  :doc "Completion At Point Extensions - enhances CAPF for LSP"
+  :req "emacs-27.1"
+  :tag "completion" "convenience" "emacs>=27.1"
+  :url "https://github.com/minad/cape"
+  :added "2026-01-13"
+  :emacs>= 27.1
+  :ensure t
+  :init
+  ;; Cache buster for LSP servers to continuously update candidates
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+  :config
+  ;; Add useful completion-at-point backends
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev))
 
 (leaf cmake-mode
   :doc "major-mode for editing CMake sources"
@@ -346,19 +385,10 @@
   :added "2024-03-27"
   :emacs>= 25.1
   :ensure t
+  :hook ((prog-mode-hook . diff-hl-mode)
+         (dired-mode-hook . diff-hl-dired-mode))
   :config
-  (global-diff-hl-mode)
   (diff-hl-margin-mode))
-
-(leaf dockerfile-mode
-  :doc "Major mode for editing Docker's Dockerfiles"
-  :req "emacs-24"
-  :tag "emacs>=24"
-  :added "2021-01-04"
-  :url "https://github.com/spotify/dockerfile-mode"
-  :emacs>= 24
-  :mode ("\\.Dockerfile$")
-  :ensure t)
 
 (leaf eglot
   :doc "The Emacs Client for LSP servers"
@@ -368,7 +398,23 @@
   :added "2024-02-22"
   :emacs>= 26.3
   :ensure t
+  :custom ((eglot-autoshutdown . t)            ; Shutdown server when last buffer closes
+           (eglot-sync-connect . nil)          ; Async connection
+           (eglot-events-buffer-size . 0))     ; Disable event logging (performance)
   :config
+  ;; Python LSP server configuration with formatters and linters
+  ;; Respects .style.yapf, .isort.cfg, pylintrc automatically
+  (setq-default eglot-workspace-configuration
+                '(:pylsp (:plugins
+                          (:yapf (:enabled t)                        ; Enable yapf formatter
+                           :isort (:enabled t)                       ; Enable isort import sorting
+                           :pylint (:enabled t :args [])             ; Enable pylint linter
+                           :flake8 (:enabled :json-false)            ; Disable flake8
+                           :autopep8 (:enabled :json-false)          ; Disable autopep8 (prefer yapf)
+                           :pycodestyle (:enabled t :maxLineLength 88) ; Style checking
+                           :pydocstyle (:enabled :json-false)))))    ; Disable docstring style
+
+  ;; Language server programs
   (add-to-list 'eglot-server-programs
                `(python-mode . ,(eglot-alternatives
                                  '("pylsp"
@@ -381,6 +427,17 @@
                                          "clangd-9"
                                          "clangd-8"
                                          "clangd-7"))))
+
+  ;; Optional: Format-on-save helper
+  (defun my/eglot-format-on-save-mode ()
+    "Enable format-on-save for Eglot-managed buffers."
+    (add-hook 'before-save-hook #'eglot-format-buffer nil t))
+
+  ;; Enable format-on-save for specific languages (uncomment to enable)
+  ;; (add-hook 'python-ts-mode-hook #'my/eglot-format-on-save-mode)
+  ;; (add-hook 'c-ts-mode-hook #'my/eglot-format-on-save-mode)
+  ;; (add-hook 'c++-ts-mode-hook #'my/eglot-format-on-save-mode)
+
   :hook ((python-mode-hook . eglot-ensure)
          (c-mode-common-hook . eglot-ensure))
 )
@@ -427,6 +484,7 @@
         xref-show-definitions-function #'consult-xref)
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :bind (("C-s" . consult-line)
+         ;; Disabled: consult-find conflicts with default find-file workflow
          ;; ("C-x C-f" . consult-find)
          ("C-x b" . consult-buffer)
          ("C-x C-b" . consult-project-buffer)
