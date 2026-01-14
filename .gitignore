@@ -9,6 +9,9 @@
 auto-save-list
 tramp
 .\#*
+custom.el
+eln-cache
+recentf
 
 # Org-mode
 .org-id-locations
