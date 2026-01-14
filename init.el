@@ -423,6 +423,9 @@
   (add-to-list 'eglot-server-programs
                `((c++-mode c-mode) . ,(eglot-alternatives
                                        '("clangd"
+                                         "clangd-20"
+                                         "clangd-19"
+                                         "clangd-18"
                                          "clangd-10"
                                          "clangd-9"
                                          "clangd-8"
