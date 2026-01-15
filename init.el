@@ -255,13 +255,14 @@
   :require t
   :custom ((corfu-auto . t)                    ; Auto-show completions
            (corfu-cycle . t)                   ; Cycle through candidates
-           (corfu-auto-delay . 0.0)            ; No delay for auto-completion
+           (corfu-auto-delay . 0.2)            ; No delay for auto-completion
            (corfu-auto-prefix . 2)             ; Minimum prefix length
            (corfu-popupinfo-delay . 0.5)       ; Documentation popup delay
            (corfu-preview-current . t)         ; Preview current candidate
            (corfu-preselect . 'prompt)         ; Preselect behavior
            (corfu-on-exact-match . nil))       ; Don't auto-complete on exact match
   :bind ((corfu-map
+          ("RET" . corfu-expand)
           ("<tab>" . corfu-next)
           ("S-<tab>" . corfu-previous)
           ("<backtab>" . corfu-previous)
@@ -427,7 +428,8 @@
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   :hook (completion-list-mode . consult-preview-at-point-mode)
-  :bind (("C-s" . consult-line)
+  :bind (;; Disabled: consult-line cannot cycle the next candidate
+         ;; ("C-s" . consult-line)
          ;; Disabled: consult-find conflicts with default find-file workflow
          ;; ("C-x C-f" . consult-find)
          ("C-x b" . consult-buffer)
@@ -435,6 +437,33 @@
          ("M-g" . consult-goto-line)
          ("M-o" . consult-imenu)
          ("M-s s" . consult-git-grep)))
+
+(leaf embark
+  :doc "Conveniently act on minibuffer completions"
+  :req "emacs-28.1" "compat-30"
+  :tag "convenience" "emacs>=28.1"
+  :url "https://github.com/oantolin/embark"
+  :added "2026-01-14"
+  :emacs>= 28.1
+  :blackout t
+  :ensure t
+  :require t
+  :bind (("C-u" . embark-act)
+         ("C-;" . embark-dwim))
+  :config
+  (setq-default prefix-help-command #'embark-prefix-help-command))
+
+(leaf embark-consult
+  :doc "Consult integration for Embark"
+  :req "emacs-28.1" "compat-30" "embark-1.1" "consult-1.8"
+  :tag "convenience" "emacs>=28.1"
+  :url "https://github.com/oantolin/embark"
+  :added "2026-01-14"
+  :emacs>= 28.1
+  :ensure t
+  :require t
+  :after embark consult
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
 
 (leaf js2-mode
   :doc "Improved JavaScript editing mode"
@@ -480,7 +509,6 @@
   :added "2025-06-14"
   :emacs>= 28.1
   :ensure t
-  ;; :after compat
   :init (marginalia-mode))
 
 (leaf markdown-mode
@@ -501,7 +529,6 @@
   :added "2025-06-14"
   :emacs>= 27.1
   :ensure t
-  ;; :after compat
   :custom '((completion-styles . '(orderless basic))
             (completion-category-defaults . nil)
             (completion-category-overrides . '((file (styles partial-completion))))))
@@ -560,7 +587,6 @@
   :added "2025-06-14"
   :emacs>= 28.1
   :ensure t
-  ;; :after compat
   :init (vertico-mode))
 
 (leaf web-mode
