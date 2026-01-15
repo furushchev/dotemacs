@@ -103,3 +103,5 @@ straight/*
 !straight/versions/
 transient
 .lsp-session-v1
+history
+tree-sitter
