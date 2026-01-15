@@ -244,6 +244,16 @@
   :mode ("\\.ino$")
   :commands arduino-mode)
 
+(leaf bazel
+  :doc "Bazel support for Emacs"
+  :req "emacs-28.1"
+  :tag "languages" "build tools" "emacs>=28.1"
+  :url "https://github.com/bazelbuild/emacs-bazel-mode"
+  :added "2026-01-14"
+  :emacs>= 28.1
+  :ensure t
+  :mode ("\\.bazel$" "\\.bzl" "BUILD" "MODULE" "WORKSPACE" "REPO" "\\.bazelrc$"))
+
 (leaf corfu
   :doc "Completion Overlay Region FUnction - modern completion UI"
   :req "emacs-27.1"
