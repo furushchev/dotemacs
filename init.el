@@ -244,33 +244,6 @@
   :mode ("\\.ino$")
   :commands arduino-mode)
 
-(leaf company
-  :doc "Modular text completion framework - DISABLED in favor of Corfu (2026-01-13)"
-  :req "emacs-24.3"
-  :tag "matching" "convenience" "abbrev" "emacs>=24.3"
-  :url "http://company-mode.github.io/"
-  :emacs>= 24.3
-  :blackout t
-  :ensure t
-  :when nil  ; Disabled: set to t to re-enable
-  :bind ((company-active-map
-          ("M-n" . nil)
-          ("M-p" . nil)
-          ("C-s" . company-filter-candidates)
-          ("C-n" . company-select-next)
-          ("C-p" . company-select-previous)
-          ("<tab>" . company-complete-selection)
-          ("M-." . company-show-doc-buffer))
-         (company-search-map
-          ("S-<tab>" . company-select-previous)
-          ("C-n" . company-select-next)
-          ("C-p" . company-select-previous)))
-  :custom ((company-idle-delay . 0)
-           (company-minimum-prefix-length . 1)
-           (company-transformers . '(company-sort-by-occurrence)))
-  :hook ((prog-mode-hook . company-mode)
-         (text-mode-hook . company-mode)))
-
 (leaf corfu
   :doc "Completion Overlay Region FUnction - modern completion UI"
   :req "emacs-27.1"
@@ -279,6 +252,7 @@
   :added "2026-01-13"
   :emacs>= 27.1
   :ensure t
+  :require t
   :custom ((corfu-auto . t)                    ; Auto-show completions
            (corfu-cycle . t)                   ; Cycle through candidates
            (corfu-auto-delay . 0.0)            ; No delay for auto-completion
@@ -287,18 +261,37 @@
            (corfu-preview-current . t)         ; Preview current candidate
            (corfu-preselect . 'prompt)         ; Preselect behavior
            (corfu-on-exact-match . nil))       ; Don't auto-complete on exact match
-  :bind (:corfu-map
-         ("TAB" . corfu-next)
-         ([tab] . corfu-next)
-         ("S-TAB" . corfu-previous)
-         ([backtab] . corfu-previous)
-         ("RET" . corfu-insert)
-         ("M-d" . corfu-show-documentation)
-         ("M-l" . corfu-show-location))
-  :init
-  (global-corfu-mode)
+  :bind ((corfu-map
+          ("<tab>" . corfu-next)
+          ("S-<tab>" . corfu-previous)
+          ("<backtab>" . corfu-previous)
+          ("M-d" . corfu-info-documentation)
+          ("M-l" . corfu-info-location)))
+  :config
+  (global-corfu-mode 1)
   (corfu-popupinfo-mode)                       ; Show documentation popup
   (corfu-history-mode))                        ; Remember completion history
+
+(leaf popon
+  :doc "\"Pop\" floating text \"on\" a window (dependency for corfu-terminal)"
+  :url "https://codeberg.org/akib/emacs-popon"
+  :added "2026-01-14"
+  :vc (:url "https://codeberg.org/akib/emacs-popon")
+  :require t)
+
+(leaf corfu-terminal
+  :doc "Terminal support for Corfu (required for non-GUI Emacs)"
+  :req "emacs-26.1" "corfu-0.7" "popon-0.13"
+  :tag "convenience" "emacs>=26.1"
+  :url "https://codeberg.org/akib/emacs-corfu-terminal"
+  :added "2026-01-14"
+  :emacs>= 26.1
+  :vc (:url "https://codeberg.org/akib/emacs-corfu-terminal")
+  :after corfu popon
+  :require t
+  :defer-config
+  (unless (display-graphic-p)
+    (corfu-terminal-mode 1)))
 
 (leaf cape
   :doc "Completion At Point Extensions - enhances CAPF for LSP"
