@@ -204,18 +204,18 @@
   :custom `((sh-basic-offset . ,tab-width)
             (sh-indentation . ,tab-width)))
 
-(leaf treesit-auto
-  :doc "Automatically install and use tree-sitter grammars"
-  :req "emacs-29.0"
-  :tag "treesitter" "languages" "emacs>=29.0"
-  :url "https://github.com/renzmann/treesit-auto"
-  :added "2026-01-14"
-  :emacs>= 29.0
-  :ensure t
-  :require t
-  :custom ((treesit-auto-install . 'prompt))  ; Prompt before installing grammars
-  :config
-  (global-treesit-auto-mode))
+;; (leaf treesit-auto
+;;   :doc "Automatically install and use tree-sitter grammars"
+;;   :req "emacs-29.0"
+;;   :tag "treesitter" "languages" "emacs>=29.0"
+;;   :url "https://github.com/renzmann/treesit-auto"
+;;   :added "2026-01-14"
+;;   :emacs>= 29.0
+;;   :ensure t
+;;   :require t
+;;   :custom ((treesit-auto-install . 'prompt))  ; Prompt before installing grammars
+;;   :config
+;;   (global-treesit-auto-mode))
 
 (leaf whitespace
   :doc "minor mode to visualize HARD TAB, ZENKAKU SPACE"
