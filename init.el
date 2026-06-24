@@ -83,7 +83,6 @@
   (set-default-coding-systems 'utf-8-unix)
   (set-file-name-coding-system 'utf-8-unix)
   (set-keyboard-coding-system 'utf-8-unix)
-  (set-language-environment 'Japanese)
   (set-terminal-coding-system 'utf-8-unix))
 
 (leaf custom-appearance
