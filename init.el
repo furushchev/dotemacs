@@ -57,7 +57,7 @@
   :tag "builtin"
   :custom `((context-menu-mode . t)
             (custom-file . ,(locate-user-emacs-file "custom.el"))
-            (debug-on-error . t)
+            (debug-on-error . nil)
             (display-warning-minimum-level . :error)
             (enable-local-variables . :safe)
             (enable-recursive-minibuffers . t)
@@ -66,7 +66,7 @@
             (history-delete-duplicates . t)
             (history-length . 1000)
             (indent-tabs-mode . nil)
-            (init-file-debug . t)
+            (init-file-debug . nil)
             (locale-coding-system . 'utf-8)
             (minibuffer-prompt-properties . '(read-only t cursor-intangible-mode t face minibuffer-prompt))
             (read-extended-command-predicate . #'command-completion-default-include-p)
@@ -200,8 +200,7 @@
   :doc "Shell mode properties"
   :tag "builtin"
   :mode ("\\.sh$" "\\.bash$" "\\.zsh$")
-  :custom `((sh-basic-offset . ,tab-width)
-            (sh-indentation . ,tab-width)))
+  :custom `((sh-basic-offset . ,tab-width)))
 
 ;; (leaf treesit-auto
 ;;   :doc "Automatically install and use tree-sitter grammars"
@@ -325,7 +324,7 @@
   :tag "emacs>=24.1"
   :added "2021-01-04"
   :emacs>= 24.1
-  :mode ("\\.cmake" "\\.CMakeLists.txt$")
+  :mode ("\\.cmake$" "CMakeLists\\.txt$")
   :ensure t)
 
 (leaf cuda-mode
@@ -627,7 +626,6 @@
   :added "2021-01-04"
   :url "http://github.com/joaotavora/yasnippet"
   :ensure t
-  :bind ("<tab>" . yas-keymap)
   :global-minor-mode yas-global-mode)
 
 (leaf yatemplate
