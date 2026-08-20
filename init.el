@@ -380,6 +380,15 @@
           ("M-d" . corfu-info-documentation)
           ("M-l" . corfu-info-location)))
   :config
+  ;; corfu-popupinfo, corfu-history and corfu-info live in corfu's extensions/
+  ;; subdirectory, which el-get puts on `load-path' (see :load-path in
+  ;; `my/pinned-packages') but does not always scrape autoloads from: on Emacs 29
+  ;; it generates el-get/.loaddefs.el from the package root only, so
+  ;; `corfu-popupinfo-mode' is void there while it is autoloaded fine on 27.1.
+  ;; Requiring the features explicitly makes this independent of that.
+  (require 'corfu-popupinfo)
+  (require 'corfu-history)
+  (require 'corfu-info)                        ; supplies the M-d / M-l commands
   (global-corfu-mode 1)
   (corfu-popupinfo-mode)                       ; Show documentation popup
   (corfu-history-mode))                        ; Remember completion history
