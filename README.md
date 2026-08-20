@@ -20,9 +20,9 @@ git clone https://github.com/furushchev/dotemacs.git ~/.emacs.d
 emacs ~/.emacs.d/init-common.el
 # ;; author
 # (setq user-full-name "Yuki Furuta")  ;; change this
-# (setq user-mail-address "me@furushchev.ru") ;; also change this
+# (setq user-mail-address "furushchev@gmail.com") ;; also change this
 ```
 
 ### Author
 
-Yuki Furuta (me@furushchev.ru)
+Yuki Furuta (furushchev@gmail.com)

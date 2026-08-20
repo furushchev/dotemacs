@@ -17,7 +17,7 @@
 
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq gc-cons-threshold (* 50 800000) ; matches init.el's :custom
+            (setq gc-cons-threshold 40000000 ; keep in sync with init.el's :custom
                   gc-cons-percentage 0.1
                   file-name-handler-alist my/file-name-handler-alist))
           ;; Append so this runs after anything else on the hook.
