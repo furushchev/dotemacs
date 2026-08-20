@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          path: dotemacs
+          submodules: recursive
+
+      - name: Install config to ~/.emacs.d
+        run: cp -aT "$GITHUB_WORKSPACE/dotemacs" "$HOME/.emacs.d"
+
+      - name: Install Emacs
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y emacs-nox git
+
+      - name: Report environment
+        run: |
+          . /etc/os-release && echo "$PRETTY_NAME"
+          emacs --version | head -1
+          git --version
+
+      - name: Lint elisp
+        run: emacs --batch -l "$HOME/.emacs.d/.github/ci/lint-elisp.el"
+
+      - name: Bootstrap packages
+        run: EMACS_INSTALL_PACKAGES=1 emacs --batch -l "$HOME/.emacs.d/init.el"
+
+      - name: Validate startup
+        run: emacs --batch -l "$HOME/.emacs.d/.github/ci/validate-startup.el"
+
+      - name: Validate packages load
+        run: emacs --batch -l "$HOME/.emacs.d/.github/ci/validate-packages.el"
+
+      - name: Report resolved versions
+        if: always()
+        run: |
+          echo "== elpa =="
+          ls -1 "$HOME/.emacs.d/elpa" 2>/dev/null || echo "(none)"
+          echo "== el-get (pinned to tags) =="
+          for d in "$HOME"/.emacs.d/el-get/*/; do
+            [ -d "$d/.git" ] || continue
+            printf '%s %s\n' "$(basename "$d")" \
+              "$(git -C "$d" describe --tags --always 2>/dev/null || echo '?')"
+          done

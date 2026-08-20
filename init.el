@@ -163,7 +163,7 @@
             (enable-local-variables . :safe)
             (enable-recursive-minibuffers . t)
             (frame-resize-pixelwise . t)
-            (gc-cons-threshold . ,(* 50 gc-cons-threshold))
+            (gc-cons-threshold . 40000000)  ; Keep in sync with early-init.el.
             (history-delete-duplicates . t)
             (history-length . 1000)
             (indent-tabs-mode . nil)
