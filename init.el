@@ -1,19 +1,15 @@
 ;; .emacs.d/init.el
 ;;
-;; Author: Yuki Furuta <me@furushchev.jp>
+;; Author: Yuki Furuta <furushchev@gmail.com>
 ;;
 
 ;; Setup leaf.el
 (eval-and-compile
-  ;; The "org" archive (orgmode.org/elpa) was retired and now serves only a
-  ;; 185-byte stub listing org 20210929, so it is dropped.  "nongnu" is needed
-  ;; for popon, corfu-terminal, llama and friends.
   (customize-set-variable
    'package-archives '(("melpa" . "https://melpa.org/packages/")
                        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
                        ("gnu" . "https://elpa.gnu.org/packages/")))
 
-  ;; WARNING: Signature verification disabled.
   ;; Emacs <28 bundles the 2019 GNU ELPA signing key, which expired 2024-04-21,
   ;; and gnu-elpa-keyring-update cannot repair it because gpg 2.2 rejects the
   ;; replacement key ("new key but contains no user ID - skipped").  Without
