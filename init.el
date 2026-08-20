@@ -5,15 +5,41 @@
 
 ;; Setup leaf.el
 (eval-and-compile
+  ;; The "org" archive (orgmode.org/elpa) was retired and now serves only a
+  ;; 185-byte stub listing org 20210929, so it is dropped.  "nongnu" is needed
+  ;; for popon, corfu-terminal, llama and friends.
   (customize-set-variable
-   'package-archives '(("org" . "https://orgmode.org/elpa/")
-                       ("melpa" . "https://melpa.org/packages/")
+   'package-archives '(("melpa" . "https://melpa.org/packages/")
+                       ("nongnu" . "https://elpa.nongnu.org/nongnu/")
                        ("gnu" . "https://elpa.gnu.org/packages/")))
+
+  ;; WARNING: Signature verification disabled.
+  ;; Emacs <28 bundles the 2019 GNU ELPA signing key, which expired 2024-04-21,
+  ;; and gnu-elpa-keyring-update cannot repair it because gpg 2.2 rejects the
+  ;; replacement key ("new key but contains no user ID - skipped").  Without
+  ;; this, archive-contents fails verification and the whole GNU ELPA archive is
+  ;; silently discarded -- 0 of 504 packages visible -- which makes compat,
+  ;; spinner, jsonrpc and the rest permanently uninstallable.
+  (when (< emacs-major-version 28)
+    (customize-set-variable 'package-check-signature nil))
+
+  ;; `leaf-handler-package' reacts to a failed install by calling
+  ;; `package-refresh-contents' and retrying -- up to two refreshes per failing
+  ;; :ensure, on every startup.  For a dependency that can never be satisfied
+  ;; that is an unbounded cost: this config was measured at 16.85s of startup,
+  ;; 12.32s of it in 60 HTTP requests, against a 0.25s floor.  Keep ordinary
+  ;; startups off the network entirely; install explicitly instead:
+  ;;   EMACS_INSTALL_PACKAGES=1 emacs
+  (defconst my/package-install-allowed (and (getenv "EMACS_INSTALL_PACKAGES") t)
+    "Non-nil when this session is permitted to install packages.")
+  (unless my/package-install-allowed
+    (advice-add 'package-refresh-contents :override #'ignore)
+    (advice-add 'package-install :override
+                (lambda (&rest _)
+                  (error "Package install skipped; re-run with EMACS_INSTALL_PACKAGES=1"))))
+
   (package-initialize)
   (when (< emacs-major-version 26)
-    ;; WARNING: Signature verification disabled for Emacs <26
-    ;; Only use with trusted package sources
-    (setq package-check-signature nil)
     ;; dummy function for blackout error
     (defun blackout (&rest args) t))
   (unless (package-installed-p 'leaf)
