@@ -6,8 +6,8 @@
 ;; init.el is lazy -- `:ensure t' with a `:mode' or `:bind' only registers an
 ;; autoload -- so a package can be half-installed, or byte-compiled against
 ;; the wrong version of a dependency, and a clean startup will still say
-;; nothing about it.  package.el compiling eglot against a newer `project' on
-;; Emacs 27.1, for instance, prints an error at install time and exits 0.
+;; nothing about it.  Requiring each feature catches incomplete dependency
+;; resolution and byte-compilation failures that startup alone can miss.
 ;;
 ;; This loads the config and then `require's each package the config declares,
 ;; which is the point at which such a mismatch actually surfaces.
@@ -18,14 +18,15 @@
 
 (defconst validate/packages
   '(arduino-mode
+    bazel
     cape
     cmake-mode
     consult
     corfu
+    corfu-terminal
     cuda-mode
     diff-hl
     eglot
-    el-get
     embark
     embark-consult
     exec-path-from-shell
@@ -37,6 +38,7 @@
     marginalia
     markdown-mode
     orderless
+    popon
     projectile
     protobuf-mode
     python-mode
@@ -48,13 +50,7 @@
     yatemplate)
   "Packages init.el declares that should be loadable after startup.
 Deliberately the top-level set, not every transitive dependency: these are
-the ones a broken pin or a stale archive would take out.")
-
-(defconst validate/packages-29
-  '(bazel)
-  "Packages init.el gates behind `:emacs>= 29.1'.
-Unobtainable on 27.1 -- every tagged emacs-bazel-mode release requires 29.1 --
-so init.el skips the block there and so do we.")
+the ones broken package resolution or a stale archive would take out.")
 
 (let ((early (locate-user-emacs-file "early-init.el"))
       (init  (locate-user-emacs-file "init.el")))
@@ -62,15 +58,10 @@ so init.el skips the block there and so do we.")
   (load init nil t)
   (run-hooks 'emacs-startup-hook))
 
-(let ((wanted (append validate/packages
-                      (when (or (> emacs-major-version 29)
-                                (and (= emacs-major-version 29)
-                                     (>= emacs-minor-version 1)))
-                        validate/packages-29)))
-      (failures 0))
+(let ((failures 0))
   (princ (format "\nRequiring %d package(s) on Emacs %s:\n"
-                 (length wanted) emacs-version))
-  (dolist (pkg wanted)
+                 (length validate/packages) emacs-version))
+  (dolist (pkg validate/packages)
     (condition-case err
         (progn
           (require pkg)
@@ -79,7 +70,7 @@ so init.el skips the block there and so do we.")
        (setq failures (1+ failures))
        (princ (format "  FAIL  %s: %s\n" pkg (error-message-string err))))))
   (princ (format "\n%d package(s) required, %d failure(s)\n"
-                 (length wanted) failures))
+                 (length validate/packages) failures))
   (kill-emacs (if (> failures 0) 1 0)))
 
 ;;; validate-packages.el ends here

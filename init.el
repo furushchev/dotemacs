@@ -10,34 +10,7 @@
                        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
                        ("gnu" . "https://elpa.gnu.org/packages/")))
 
-  ;; Emacs <28 bundles the 2019 GNU ELPA signing key, which expired 2024-04-21,
-  ;; and gnu-elpa-keyring-update cannot repair it because gpg 2.2 rejects the
-  ;; replacement key ("new key but contains no user ID - skipped").  Without
-  ;; this, archive-contents fails verification and the whole GNU ELPA archive is
-  ;; silently discarded -- 0 of 504 packages visible -- which makes compat,
-  ;; spinner, jsonrpc and the rest permanently uninstallable.
-  (when (< emacs-major-version 28)
-    (customize-set-variable 'package-check-signature nil))
-
-  ;; `leaf-handler-package' reacts to a failed install by calling
-  ;; `package-refresh-contents' and retrying -- up to two refreshes per failing
-  ;; :ensure, on every startup.  For a dependency that can never be satisfied
-  ;; that is an unbounded cost: this config was measured at 16.85s of startup,
-  ;; 12.32s of it in 60 HTTP requests, against a 0.25s floor.  Keep ordinary
-  ;; startups off the network entirely; install explicitly instead:
-  ;;   EMACS_INSTALL_PACKAGES=1 emacs
-  (defconst my/package-install-allowed (and (getenv "EMACS_INSTALL_PACKAGES") t)
-    "Non-nil when this session is permitted to install packages.")
-  (unless my/package-install-allowed
-    (advice-add 'package-refresh-contents :override #'ignore)
-    (advice-add 'package-install :override
-                (lambda (&rest _)
-                  (error "Package install skipped; re-run with EMACS_INSTALL_PACKAGES=1"))))
-
   (package-initialize)
-  (when (< emacs-major-version 26)
-    ;; dummy function for blackout error
-    (defun blackout (&rest args) t))
   (unless (package-installed-p 'leaf)
     (package-refresh-contents)
     (package-install 'leaf))
@@ -47,91 +20,12 @@
     :init
     :config
     (leaf-keywords-init)
-    (leaf blackout :emacs>= 26 :ensure t)
-    (leaf el-get :ensure t)))
+    (leaf blackout :ensure t)))
 
 (leaf leaf
   :doc "Install leaf-convert after leaf is enabled"
   :config
-  (leaf leaf-convert :emacs>= 26 :ensure t))
-
-;; Pinned packages
-;;
-;; Upstream has moved the packages below to Emacs 28.1/29.1, and no ELPA archive
-;; (gnu, nongnu, melpa, melpa-stable) retains older versions -- each keeps only
-;; the newest.  So on Emacs 27.1 they are unobtainable via package.el at any
-;; version, and every :ensure t for them failed on each startup.  Pin each to
-;; the last upstream release that still declares (emacs "27.1") or lower and
-;; fetch it from git with el-get, which clones the tag, byte-compiles and
-;; generates autoloads.  Installed cost is ~0.2s; nothing here touches the
-;; network once cloned.
-;;
-;; Ordering matters: el-get byte-compiles in sequence, so a package must come
-;; after anything it requires at compile time.
-;;
-;; When Emacs is newer than 27.1 this whole block can be deleted and the
-;; corresponding leaf blocks returned to plain :ensure t.
-(defconst my/pinned-packages
-  '((:name transient      :type git :load-path ("lisp")
-           :url "https://github.com/magit/transient.git"        :checkout "v0.10.1")
-    (:name with-editor    :type git :load-path ("lisp")
-           :url "https://github.com/magit/with-editor.git"      :checkout "v3.5.0")
-    ;; magit v4.4.0 raised its floor to Emacs 28.1; v4.3.8 also supplies
-    ;; magit-section, so one clone covers both.
-    (:name magit          :type git :load-path ("lisp")
-           :url "https://github.com/magit/magit.git"            :checkout "v4.3.8")
-    (:name corfu          :type git :load-path ("." "extensions")
-           :url "https://github.com/minad/corfu.git"            :checkout "1.5")
-    (:name popon          :type git
-           :url "https://codeberg.org/akib/emacs-popon.git"     :checkout "v0.13")
-    ;; corfu-terminal requires corfu, which package.el cannot resolve here
-    ;; because our corfu is pinned outside the archives -- so pin this too.
-    (:name corfu-terminal :type git
-           :url "https://codeberg.org/akib/emacs-corfu-terminal.git" :checkout "v0.7")
-    (:name cape           :type git
-           :url "https://github.com/minad/cape.git"             :checkout "1.7")
-    (:name vertico        :type git :load-path ("." "extensions")
-           :url "https://github.com/minad/vertico.git"          :checkout "1.9")
-    (:name consult        :type git
-           :url "https://github.com/minad/consult.git"          :checkout "1.8")
-    (:name marginalia     :type git
-           :url "https://github.com/minad/marginalia.git"       :checkout "1.7")
-    ;; embark 1.1 also supplies embark-consult, so it must follow consult.
-    (:name embark         :type git
-           :url "https://github.com/oantolin/embark.git"        :checkout "1.1")
-    (:name projectile     :type git
-           :url "https://github.com/bbatsov/projectile.git"     :checkout "v2.9.1")
-    (:name markdown-mode  :type git
-           :url "https://github.com/jrblevin/markdown-mode.git" :checkout "v2.7"))
-  "Recipes for packages pinned to their last Emacs 27.1-compatible release.")
-
-;; Dependencies of the pinned packages that package.el *can* still satisfy on
-;; Emacs 27.1.  These must precede the el-get block: el-get byte-compiles each
-;; pinned package as it clones it, so they have to be loadable by then.
-(leaf compat :doc "Compatibility shims required by consult, embark, vertico, magit"
-  :ensure t :require t)
-(leaf llama  :doc "Required by magit 4.3.8" :ensure t)
-(leaf seq    :doc "magit 4.3.8 needs seq 2.24; Emacs 27.1 bundles 2.21"
-  :ensure t)
-
-(leaf el-get
-  :doc "Fetch pinned packages from git at a fixed tag"
-  :ensure t
-  :require t
-  :custom `((el-get-dir . ,(locate-user-emacs-file "el-get/"))
-            (el-get-notify-type . 'message))
-  :config
-  (setq el-get-sources my/pinned-packages)
-  ;; Activate what is already cloned.  Cloning only happens when installs are
-  ;; explicitly enabled, so a network outage can never slow down a normal start.
-  (dolist (recipe my/pinned-packages)
-    (let ((name (plist-get recipe :name)))
-      (when (or my/package-install-allowed
-                (el-get-package-is-installed name))
-        (condition-case err
-            (el-get 'sync name)
-          (error (display-warning 'init (format "pinned package %s: %s"
-                                                name (error-message-string err)))))))))
+  (leaf leaf-convert :ensure t))
 
 ;; Setup variables
 (leaf custom-keybinding
@@ -349,9 +243,6 @@
   :tag "languages" "build tools" "emacs>=29.1"
   :url "https://github.com/bazelbuild/emacs-bazel-mode"
   :added "2026-01-14"
-  ;; Unobtainable on Emacs 27.1: every tagged release, back to the oldest
-  ;; (v0.0.3), requires Emacs 29.1, so there is nothing to pin.  The guard below
-  ;; makes leaf skip this block outright rather than retry the install.
   :emacs>= 29.1
   :ensure t
   :mode ("\\.bazel$" "\\.bzl" "BUILD" "MODULE" "WORKSPACE" "REPO" "\\.bazelrc$"))
@@ -363,7 +254,8 @@
   :url "https://github.com/minad/corfu"
   :added "2026-01-13"
   :emacs>= 27.1
-  :require t                                   ; pinned to 1.5, see my/pinned-packages
+  :ensure t
+  :require t
   :custom ((corfu-auto . t)                    ; Auto-show completions
            (corfu-cycle . t)                   ; Cycle through candidates
            (corfu-auto-delay . 0.2)            ; No delay for auto-completion
@@ -380,15 +272,6 @@
           ("M-d" . corfu-info-documentation)
           ("M-l" . corfu-info-location)))
   :config
-  ;; corfu-popupinfo, corfu-history and corfu-info live in corfu's extensions/
-  ;; subdirectory, which el-get puts on `load-path' (see :load-path in
-  ;; `my/pinned-packages') but does not always scrape autoloads from: on Emacs 29
-  ;; it generates el-get/.loaddefs.el from the package root only, so
-  ;; `corfu-popupinfo-mode' is void there while it is autoloaded fine on 27.1.
-  ;; Requiring the features explicitly makes this independent of that.
-  (require 'corfu-popupinfo)
-  (require 'corfu-history)
-  (require 'corfu-info)                        ; supplies the M-d / M-l commands
   (global-corfu-mode 1)
   (corfu-popupinfo-mode)                       ; Show documentation popup
   (corfu-history-mode))                        ; Remember completion history
@@ -397,7 +280,8 @@
   :doc "\"Pop\" floating text \"on\" a window (dependency for corfu-terminal)"
   :url "https://codeberg.org/akib/emacs-popon"
   :added "2026-01-14"
-  :require t)                                  ; pinned to v0.13, see my/pinned-packages
+  :vc (:url "https://codeberg.org/akib/emacs-popon")
+  :require t)
 
 (leaf corfu-terminal
   :doc "Terminal support for Corfu (required for non-GUI Emacs)"
@@ -406,8 +290,9 @@
   :url "https://codeberg.org/akib/emacs-corfu-terminal"
   :added "2026-01-14"
   :emacs>= 26.1
+  :vc (:url "https://codeberg.org/akib/emacs-corfu-terminal")
   :after corfu popon
-  :require t                                   ; pinned to v0.7, see my/pinned-packages
+  :require t
   :defer-config
   (unless (display-graphic-p)
     (corfu-terminal-mode 1)))
@@ -418,7 +303,8 @@
   :tag "completion" "convenience" "emacs>=27.1"
   :url "https://github.com/minad/cape"
   :added "2026-01-13"
-  :emacs>= 27.1                                ; pinned to 1.7, see my/pinned-packages
+  :emacs>= 27.1
+  :ensure t
   :init
   ;; Cache buster for LSP servers to continuously update candidates
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
@@ -544,7 +430,8 @@
   :tag "completion" "files" "matching" "emacs>=28.1"
   :url "https://github.com/minad/consult"
   :added "2025-06-14"
-  :emacs>= 27.1                                ; pinned to 1.8, see my/pinned-packages
+  :emacs>= 28.1
+  :ensure t
   :init
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
@@ -565,8 +452,9 @@
   :tag "convenience" "emacs>=28.1"
   :url "https://github.com/oantolin/embark"
   :added "2026-01-14"
-  :emacs>= 27.1                                ; pinned to 1.1, see my/pinned-packages
+  :emacs>= 28.1
   :blackout t
+  :ensure t
   :require t
   :bind (("C-u" . embark-act)
          ("C-;" . embark-dwim))
@@ -579,7 +467,8 @@
   :tag "convenience" "emacs>=28.1"
   :url "https://github.com/oantolin/embark"
   :added "2026-01-14"
-  :emacs>= 27.1                                ; ships with pinned embark 1.1
+  :emacs>= 28.1
+  :ensure t
   :require t
   :after embark consult
   :hook (embark-collect-mode . consult-preview-at-point-mode))
@@ -600,7 +489,8 @@
   :tag "vc" "tools" "git" "emacs>=25.1"
   :added "2021-02-14"
   :url "https://github.com/magit/magit"
-  :emacs>= 25.1                                ; pinned to v4.3.8, see my/pinned-packages
+  :emacs>= 25.1
+  :ensure t
   :after git-commit with-editor
   :bind (("C-x g" . magit-status))
   :defvar magit-mode-map
@@ -625,7 +515,8 @@
   :tag "completion" "matching" "help" "docs" "emacs>=28.1"
   :url "https://github.com/minad/marginalia"
   :added "2025-06-14"
-  :emacs>= 27.1                                ; pinned to 1.7, see my/pinned-packages
+  :emacs>= 28.1
+  :ensure t
   :init (marginalia-mode))
 
 (leaf markdown-mode
@@ -634,7 +525,8 @@
   :tag "itex" "github flavored markdown" "markdown" "emacs>=27.1"
   :url "https://jblevins.org/projects/markdown-mode"
   :added "2024-02-22"
-  :emacs>= 27.1                                ; pinned to v2.7, see my/pinned-packages
+  :emacs>= 27.1
+  :ensure t
   :mode ("\\.md$" "\\.markdown$"))
 
 (leaf orderless
@@ -655,7 +547,8 @@
   :tag "convenience" "project" "emacs>=25.1"
   :url "https://github.com/bbatsov/projectile"
   :added "2024-03-27"
-  :emacs>= 25.1                                ; pinned to v2.9.1, see my/pinned-packages
+  :emacs>= 25.1
+  :ensure t
   :config
   (projectile-mode +1)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
@@ -700,7 +593,8 @@
   :tag "completion" "matching" "files" "convenience" "emacs>=28.1"
   :url "https://github.com/minad/vertico"
   :added "2025-06-14"
-  :emacs>= 27.1                                ; pinned to 1.9, see my/pinned-packages
+  :emacs>= 28.1
+  :ensure t
   :init (vertico-mode))
 
 (leaf web-mode

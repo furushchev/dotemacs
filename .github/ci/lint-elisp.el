@@ -10,7 +10,8 @@
 ;; multi-minute package bootstrap runs.
 ;;
 ;; Only our own sources are checked.  Vendored and installed trees
-;; (elpa/, el-get/, the systemrdl-mode submodule) are upstream's problem.
+;; (elpa/, a legacy el-get/ tree, and the systemrdl-mode submodule) are
+;; upstream's problem.
 
 (require 'subr-x)
 
