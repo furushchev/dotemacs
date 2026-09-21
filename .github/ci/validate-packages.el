@@ -23,7 +23,6 @@
     cmake-mode
     consult
     corfu
-    corfu-terminal
     cuda-mode
     diff-hl
     eglot
@@ -38,7 +37,6 @@
     marginalia
     markdown-mode
     orderless
-    popon
     projectile
     protobuf-mode
     python-mode

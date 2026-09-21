@@ -1,4 +1,4 @@
-;; .emacs.d/init.el
+;; .emacs.d/init.el -*- lexical-binding: t; -*-
 ;;
 ;; Author: Yuki Furuta <furushchev@gmail.com>
 ;;
@@ -289,27 +289,6 @@ Returns:
   (global-corfu-mode 1)
   (corfu-popupinfo-mode)                       ; Show documentation popup
   (corfu-history-mode))                        ; Remember completion history
-
-(leaf popon
-  :doc "\"Pop\" floating text \"on\" a window (dependency for corfu-terminal)"
-  :url "https://codeberg.org/akib/emacs-popon"
-  :added "2026-01-14"
-  :vc (:url "https://codeberg.org/akib/emacs-popon")
-  :require t)
-
-(leaf corfu-terminal
-  :doc "Terminal support for Corfu (required for non-GUI Emacs)"
-  :req "emacs-26.1" "corfu-0.7" "popon-0.13"
-  :tag "convenience" "emacs>=26.1"
-  :url "https://codeberg.org/akib/emacs-corfu-terminal"
-  :added "2026-01-14"
-  :emacs>= 26.1
-  :vc (:url "https://codeberg.org/akib/emacs-corfu-terminal")
-  :after corfu popon
-  :require t
-  :defer-config
-  (unless (display-graphic-p)
-    (corfu-terminal-mode 1)))
 
 (leaf cape
   :doc "Completion At Point Extensions - enhances CAPF for LSP"
@@ -783,7 +762,6 @@ Returns:
   :tag "out-of-MELPA"
   :added "2025-06-23"
   :load-path `,(expand-file-name "site-lisp/systemrdl-mode" user-emacs-directory)
-  :require t
   :mode ("\\.rdl"))
 
 (leaf vertico
