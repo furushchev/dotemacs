@@ -189,7 +189,21 @@
   :url "https://gitlab.com/groups/python-mode-devs"
   :added "2022-04-29"
   :ensure t
-  :mode ("\\.py$"))
+  :mode ("\\.py$")
+  :preface
+  (defun my/python-mode-disable-process-completion ()
+    "Remove python-mode's process-backed completion from this buffer.
+
+The external python-mode package installs `py-fast-complete' as a
+completion-at-point function.  Corfu calls it automatically, which starts an
+inferior Python process and displays a separate completions buffer.  Eglot and
+Cape provide the completion-at-point functions used by this configuration.
+
+Returns:
+  The updated buffer-local completion-at-point function list."
+    (setq-local completion-at-point-functions
+                (delq #'py-fast-complete completion-at-point-functions)))
+  :hook (python-mode-hook . my/python-mode-disable-process-completion))
 
 (leaf sh-mode
   :doc "Shell mode properties"
@@ -350,6 +364,201 @@
   :added "2024-02-22"
   :emacs>= 26.3
   :ensure t
+  :preface
+  (defconst my/python-lsp-project-directory
+    (expand-file-name (locate-user-emacs-file "python-lsp/"))
+    "Directory containing the locked Python LSP project.")
+
+  (defconst my/python-lsp-venv-directory
+    (expand-file-name (locate-user-emacs-file "venv/"))
+    "Directory containing the uv-managed Python LSP environment.")
+
+  (defconst my/python-lsp-executable
+    (expand-file-name "bin/pylsp" my/python-lsp-venv-directory)
+    "Absolute path to the uv-managed pylsp executable.")
+
+  (defconst my/python-lsp-lock-file
+    (expand-file-name "uv.lock" my/python-lsp-project-directory)
+    "Lock file defining the Python LSP environment.")
+
+  (defconst my/python-lsp-ready-file
+    (expand-file-name ".emacs-python-lsp-ready" my/python-lsp-venv-directory)
+    "Stamp written after the Python LSP environment is synchronized.")
+
+  (defvar my/python-lsp-setup-process nil
+    "Process currently synchronizing the Python LSP environment.")
+
+  (defvar my/python-lsp-pending-buffers nil
+    "Python buffers waiting for the Python LSP environment.")
+
+  (defun my/python-lsp-project-environment ()
+    "Find a Python environment in the current project root.
+
+Returns:
+  The absolute path to a project Python executable, or nil when neither
+  `.venv' nor `venv' contains one."
+    (let ((candidates
+           (list (expand-file-name ".venv/bin/python" default-directory)
+                 (expand-file-name "venv/bin/python" default-directory)))
+          found)
+      (while (and candidates (not found))
+        (when (file-executable-p (car candidates))
+          (setq found (car candidates)))
+        (setq candidates (cdr candidates)))
+      found))
+
+  (defun my/python-lsp-workspace-configuration (_server)
+    "Build pylsp configuration for the current project.
+
+Args:
+  _SERVER: The Eglot server requesting configuration.  It is unused because
+    Eglot binds `default-directory' to the project root before calling this
+    function.
+
+Returns:
+  A plist suitable for `eglot-workspace-configuration'."
+    (let ((plugins
+           '(:yapf (:enabled t)
+             :isort (:enabled t)
+             :pylint (:enabled t :args [])
+             :flake8 (:enabled :json-false)
+             :autopep8 (:enabled :json-false)
+             :pycodestyle (:enabled t :maxLineLength 88)
+             :pydocstyle (:enabled :json-false)))
+          (environment (my/python-lsp-project-environment)))
+      (when environment
+        (setq plugins
+              (append plugins `(:jedi (:environment ,environment)))))
+      `(:pylsp (:plugins ,plugins))))
+
+  (defun my/python-lsp-ready-p ()
+    "Return whether the locked Python LSP environment is ready.
+
+Returns:
+  Non-nil when pylsp is executable and the ready stamp is at least as new as
+  the lock file."
+    (and (file-executable-p my/python-lsp-executable)
+         (file-readable-p my/python-lsp-lock-file)
+         (file-exists-p my/python-lsp-ready-file)
+         (not (file-newer-than-file-p my/python-lsp-lock-file
+                                      my/python-lsp-ready-file))))
+
+  (defun my/python-lsp-write-ready-file ()
+    "Record that the locked Python LSP environment was synchronized.
+
+Returns:
+  The result of writing the ready stamp."
+    (make-directory my/python-lsp-venv-directory t)
+    (with-temp-file my/python-lsp-ready-file
+      (insert (format "Synchronized %s\n" (format-time-string "%FT%T%z")))))
+
+  (defun my/python-lsp-start-eglot (buffer)
+    "Start Eglot in BUFFER after the Python LSP setup completes.
+
+Args:
+  BUFFER: A Python buffer that was waiting for pylsp.
+
+Returns:
+  The return value of `eglot-ensure', or nil when BUFFER is no longer a live
+  Python buffer."
+    (when (buffer-live-p buffer)
+      (with-current-buffer buffer
+        (when (derived-mode-p 'python-mode)
+          (eglot-ensure)))))
+
+  (defun my/python-lsp-setup-sentinel (process _event)
+    "Handle completion of the uv synchronization PROCESS.
+
+Args:
+  PROCESS: The uv process synchronizing the LSP environment.
+  _EVENT: The process status event string, which is not otherwise needed.
+
+Returns:
+  Nil after handling the process status."
+    (when (memq (process-status process) '(exit signal))
+      (setq my/python-lsp-setup-process nil)
+      (if (and (eq (process-status process) 'exit)
+               (zerop (process-exit-status process))
+               (file-executable-p my/python-lsp-executable))
+          (let ((buffers my/python-lsp-pending-buffers)
+                (output-buffer (process-buffer process)))
+            (setq my/python-lsp-pending-buffers nil)
+            (my/python-lsp-write-ready-file)
+            (when (buffer-live-p output-buffer)
+              (kill-buffer output-buffer))
+            (message "Python LSP environment is ready")
+            (dolist (buffer buffers)
+              (my/python-lsp-start-eglot buffer)))
+        (setq my/python-lsp-pending-buffers nil)
+        (display-warning
+         'python-lsp
+         (format "Python LSP setup failed (exit %s); see *Python LSP Setup*"
+                 (process-exit-status process))
+         :error)
+        (when (buffer-live-p (process-buffer process))
+          (display-buffer (process-buffer process)))))
+    nil)
+
+  (defun my/python-lsp-start-setup ()
+    "Synchronize the locked Python LSP environment asynchronously.
+
+Returns:
+  The running uv process, an existing setup process, or nil if setup could not
+  be started."
+    (cond
+     ((process-live-p my/python-lsp-setup-process)
+      my/python-lsp-setup-process)
+     ((not (file-readable-p my/python-lsp-lock-file))
+      (display-warning
+       'python-lsp
+       (format "Python LSP lock file is missing: %s" my/python-lsp-lock-file)
+       :error)
+      nil)
+     ((not (executable-find "uv"))
+      (display-warning 'python-lsp "uv is required to install pylsp" :error)
+      nil)
+     (t
+      (let* ((uv (executable-find "uv"))
+             (output-buffer (get-buffer-create "*Python LSP Setup*"))
+             (process-environment (copy-sequence process-environment)))
+        (setenv "UV_PROJECT_ENVIRONMENT" my/python-lsp-venv-directory)
+        (with-current-buffer output-buffer
+          (let ((inhibit-read-only t))
+            (erase-buffer)
+            (insert (format "$ UV_PROJECT_ENVIRONMENT=%s %s sync --locked\n\n"
+                            my/python-lsp-venv-directory uv))))
+        (condition-case err
+            (setq my/python-lsp-setup-process
+                  (make-process
+                   :name "python-lsp-setup"
+                   :buffer output-buffer
+                   :command (list uv "sync"
+                                  "--project" my/python-lsp-project-directory
+                                  "--locked" "--no-dev" "--no-progress")
+                   :noquery t
+                   :sentinel #'my/python-lsp-setup-sentinel))
+          (error
+           (with-current-buffer output-buffer
+             (goto-char (point-max))
+             (insert (format "\nFailed to start uv: %s\n"
+                             (error-message-string err))))
+           (display-warning
+            'python-lsp
+            (format "Could not start Python LSP setup: %s"
+                    (error-message-string err))
+            :error)
+           (display-buffer output-buffer)
+           nil))))))
+
+  (defun my/python-lsp-ensure ()
+    "Start Eglot or arrange to start it after pylsp is installed.
+
+Returns:
+  The return value of `eglot-ensure', the uv setup process, or nil."
+    (if (my/python-lsp-ready-p)
+        (eglot-ensure)
+      (add-to-list 'my/python-lsp-pending-buffers (current-buffer))
+      (my/python-lsp-start-setup)))
   :custom ((eglot-autoshutdown . t)            ; Shutdown server when last buffer closes
            (eglot-sync-connect . nil)          ; Async connection
            (eglot-events-buffer-size . 0))     ; Disable event logging (performance)
@@ -357,21 +566,11 @@
   ;; Python LSP server configuration with formatters and linters
   ;; Respects .style.yapf, .isort.cfg, pylintrc automatically
   (setq-default eglot-workspace-configuration
-                '(:pylsp (:plugins
-                          (:yapf (:enabled t)                        ; Enable yapf formatter
-                           :isort (:enabled t)                       ; Enable isort import sorting
-                           :pylint (:enabled t :args [])             ; Enable pylint linter
-                           :flake8 (:enabled :json-false)            ; Disable flake8
-                           :autopep8 (:enabled :json-false)          ; Disable autopep8 (prefer yapf)
-                           :pycodestyle (:enabled t :maxLineLength 88) ; Style checking
-                           :pydocstyle (:enabled :json-false)))))    ; Disable docstring style
+                #'my/python-lsp-workspace-configuration)
 
   ;; Language server programs
   (add-to-list 'eglot-server-programs
-               `(python-mode . ,(eglot-alternatives
-                                 '("pylsp"
-                                   "jedi-language-server"
-                                   ("pyright-langserver" "--stdio")))))
+               `(python-mode . (,my/python-lsp-executable)))
   (add-to-list 'eglot-server-programs
                `((c++-mode c-mode c++-ts-mode c-ts-mode) . ,(eglot-alternatives
                                                               '("clangd"
@@ -383,7 +582,7 @@
                                                                 "clangd-8"
                                                                 "clangd-7"))))
 
-  :hook ((python-mode-hook . eglot-ensure)
+  :hook ((python-mode-hook . my/python-lsp-ensure)
          (c-mode-hook . eglot-ensure)
          (c++-mode-hook . eglot-ensure)
          (c-ts-mode-hook . eglot-ensure)

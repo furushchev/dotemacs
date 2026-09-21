@@ -1,0 +1,12 @@
+[project]
+name = "emacs-python-lsp"
+version = "0.1.0"
+description = "Locked Python LSP environment for Emacs"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "python-lsp-isort",
+  "python-lsp-server[all]",
+]
+
+[tool.uv]
+package = false
