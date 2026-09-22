@@ -19,7 +19,6 @@
 ;; So: load both files in the real order, run `emacs-startup-hook' the way
 ;; startup.el would, and treat anything logged to *Warnings* as a failure.
 
-;; `string-trim' / `string-empty-p' live in subr-x on Emacs 27.
 (require 'subr-x)
 
 (setq debug-on-error t)
@@ -29,21 +28,14 @@
 ;; config change can never quietly stop warnings from reaching us.
 (setq warning-minimum-log-level :warning)
 
-(defconst validate/installing (and (getenv "EMACS_INSTALL_PACKAGES") t)
-  "Non-nil when this run is allowed to reach the network.")
-
-;; A normal startup must not touch the network: init.el neutralises
-;; `package-refresh-contents' and `package-install' unless
-;; EMACS_INSTALL_PACKAGES is set, because a single unsatisfiable :ensure
-;; otherwise costs a refresh-and-retry storm on every single start.  That
-;; guarantee is worth asserting rather than trusting -- trip on the actual
-;; fetch, so any new network caller is caught too, not just package.el's.
-(unless validate/installing
-  (dolist (fn '(url-retrieve url-retrieve-synchronously))
-    (advice-add fn :override
-                (lambda (&rest args)
-                  (error "Offline startup tried to reach the network: %s %S"
-                         fn (car args))))))
+;; CI bootstraps every dependency before this check, so a subsequent startup
+;; should be fully local.  Trip on the actual fetch to catch any unexpected
+;; network access, regardless of which package initiates it.
+(dolist (fn '(url-retrieve url-retrieve-synchronously))
+  (advice-add fn :override
+              (lambda (&rest args)
+                (error "Offline startup tried to reach the network: %s %S"
+                       fn (car args)))))
 
 (let* ((early (locate-user-emacs-file "early-init.el"))
        (init  (locate-user-emacs-file "init.el"))

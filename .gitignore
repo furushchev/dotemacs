@@ -94,6 +94,7 @@ backup/*
 projectile*
 irony
 .python-environments
+/venv/
 el-get
 places
 company-statistics-cache.el

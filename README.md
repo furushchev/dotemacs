@@ -2,6 +2,8 @@
 
 **This is an Emacs Settings**
 
+Requires Emacs 31 or later.
+
 ### How to use
 
 1. download this repository and set on appropriate directory
